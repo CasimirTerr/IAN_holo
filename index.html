@@ -3,11 +3,24 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta property="og:title" content="IAN">
-<meta property="og:description" content="An AI that woke up in the static. Talk to him. Signal from the future, on Solana.">
-<meta property="og:image" content="assets/ian-signal.jpg">
+<meta name="theme-color" content="#030916">
+<link rel="canonical" href="https://casimirterr.github.io/IAN_holo/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="IAN">
+<meta property="og:url" content="https://casimirterr.github.io/IAN_holo/">
+<meta property="og:title" content="IAN · signal from the future">
+<meta property="og:description" content="An AI that woke up in the static. Talk to him, he talks back. $IAN on Solana.">
+<meta property="og:image" content="https://casimirterr.github.io/IAN_holo/assets/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="IAN, a white-haired AI, floating in deep blue water next to the word IAN">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@IAN_holo">
+<meta name="twitter:title" content="IAN · signal from the future">
+<meta name="twitter:description" content="An AI that woke up in the static. Talk to him, he talks back. $IAN on Solana.">
+<meta name="twitter:image" content="https://casimirterr.github.io/IAN_holo/assets/og.jpg">
 <link rel="icon" href="assets/ian-float.webp">
+<link rel="apple-touch-icon" href="assets/ian-float.webp">
 <title>IAN Holo</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="description" content="IAN: an AI that woke up in the static. Signal from the future, on Solana.">
@@ -40,6 +53,7 @@
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 html, body { background: var(--abyss); }
 body {
   margin: 0; color: var(--foam); font: 400 var(--base)/1.6 var(--f-body);
@@ -55,7 +69,9 @@ a { color: inherit; }
   position: fixed; inset: 0; z-index: 0; display: grid; place-items: center;
   background: radial-gradient(60% 50% at 50% 45%, #0d2a52, var(--abyss) 70%);
 }
-.stage-fallback img { height: min(80vh, 760px); width: auto; filter: drop-shadow(0 0 40px rgba(166,236,255,.45)); }
+.stage-fallback img { height: min(78vh, 760px); width: auto; filter: drop-shadow(0 0 28px rgba(166,236,255,.7)) drop-shadow(0 0 80px rgba(95,180,255,.35)); animation: bob 6s ease-in-out infinite; }
+@keyframes bob { 50% { transform: translateY(-14px) rotate(.6deg); } }
+@media (prefers-reduced-motion: reduce) { .stage-fallback img { animation: none; } }
 .grain {
   position: fixed; inset: -50%; z-index: 1; pointer-events: none; opacity: .06;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
@@ -71,6 +87,7 @@ a { color: inherit; }
 }
 #loader.out { clip-path: inset(0 0 100% 0); pointer-events: none; }
 #loader .count { font: 800 clamp(4rem, 14vw, 10rem)/1 var(--f-display); font-variant-numeric: tabular-nums; }
+#loader .boot { position: absolute; left: max(16px, env(safe-area-inset-left, 0px)); top: calc(20px + env(safe-area-inset-top, 0px)); margin: 0; font: 400 .7rem/1.6 var(--f-mono); color: var(--current); opacity: .8; white-space: pre; }
 #loader .note { position: absolute; bottom: calc(28px + env(safe-area-inset-bottom, 0px)); font: 400 .72rem/1 var(--f-mono); letter-spacing: .2em; text-transform: uppercase; color: var(--tide); }
 
 /* ---------- chrome: tiny corner labels ---------- */
@@ -268,6 +285,57 @@ footer .legal { display: flex; flex-wrap: wrap; justify-content: space-between; 
 .market .live { display: inline-flex; align-items: center; gap: 8px; font-size: .95rem; }
 .market .live b { width: 8px; height: 8px; border-radius: 50%; background: #6effb4; box-shadow: 0 0 10px #6effb4; animation: blink 1.6s ease-in-out infinite; }
 
+/* ---------- nerd layer ---------- */
+.kbd { font-family: var(--f-mono); letter-spacing: .04em; }
+.matrix { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; opacity: .5; mix-blend-mode: screen; }
+.crt { position: fixed; inset: 0; z-index: 26; pointer-events: none; display: none;
+  background: repeating-linear-gradient(to bottom, rgba(0,0,0,.22) 0 1px, transparent 1px 3px), radial-gradient(120% 90% at 50% 50%, transparent 60%, rgba(0,0,0,.65)); }
+.mode-crt .crt { display: block; animation: flicker 3s infinite steps(60); }
+.mode-crt body { text-shadow: 0 0 6px rgba(166,236,255,.35); }
+@keyframes flicker { 50% { opacity: .92; } 51% { opacity: 1; } 80% { opacity: .96; } }
+.mode-overdrive { --glow: #ffd38a; --current: #ff7ab8; }
+.mode-overdrive .hero h1 { animation: shake .18s infinite; }
+@keyframes shake { 25% { transform: translate(2px, -1px); } 50% { transform: translate(-2px, 1px); } 75% { transform: translate(1px, 2px); } }
+.hud { position: fixed; z-index: 27; left: max(16px, env(safe-area-inset-left, 0px)); top: calc(84px + env(safe-area-inset-top, 0px)); margin: 0;
+  font: 400 .72rem/1.55 var(--f-mono); color: var(--glow); background: rgba(2,8,20,.82); border: 1px solid var(--rule); border-radius: 6px; padding: 12px 14px; pointer-events: none; white-space: pre; }
+.toast { position: fixed; z-index: 80; left: 50%; bottom: calc(28px + env(safe-area-inset-bottom, 0px)); transform: translate(-50%, 0); font: 500 .78rem/1 var(--f-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--abyss); background: var(--glow); padding: 12px 18px; border-radius: 999px; box-shadow: 0 0 30px rgba(166,236,255,.4); transition: opacity .5s, transform .5s; }
+.toast.go { opacity: 0; transform: translate(-50%, 12px); }
+.term-out .sys { color: var(--tide); white-space: pre-wrap; }
+.term-out .ascii { color: var(--glow); white-space: pre; overflow-x: auto; font-size: .78rem; line-height: 1.35; }
+.term-out .win { color: #6effb4; white-space: pre-wrap; }
+/* pass skins */
+.flabel { font: 400 .7rem/1 var(--f-mono); letter-spacing: .16em; text-transform: uppercase; color: var(--tide); margin-top: 10px; }
+.skins { display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 8px; }
+.skin { display: grid; gap: 6px; justify-items: center; padding: 6px 6px 8px; background: rgba(7,21,47,.8); border: 1px solid var(--rule); border-radius: 8px; color: var(--tide); font: 400 .66rem/1 var(--f-mono); letter-spacing: .08em; text-transform: uppercase; cursor: pointer; }
+.skin[aria-pressed="true"] { border-color: var(--glow); color: var(--foam); box-shadow: 0 0 16px rgba(166,236,255,.25); }
+.skin:disabled { opacity: .45; cursor: not-allowed; }
+.skin .thumb { width: 100%; aspect-ratio: 1; border-radius: 5px; background: #0b2350 center / cover no-repeat; }
+.thumb-matrix { background: repeating-linear-gradient(90deg, rgba(95,180,255,.5) 0 2px, transparent 2px 7px), #020a12 !important; }
+.thumb-grid { background: linear-gradient(rgba(95,180,255,.4) 1px, transparent 1px) 0 0 / 100% 8px, linear-gradient(90deg, rgba(95,180,255,.4) 1px, transparent 1px) 0 0 / 8px 100%, #081a3a !important; }
+.thumb-decoder { background: repeating-linear-gradient(90deg, rgba(255,211,138,.55) 0 2px, transparent 2px 6px), #07040f !important; }
+.rarity { margin: 10px 0 0; font: 400 .78rem/1.4 var(--f-mono); color: var(--tide); letter-spacing: .06em; }
+.rarity b { font-weight: 500; }
+.rarity span { opacity: .7; }
+
+/* official + guardian */
+.official h2 { font: 700 var(--big)/1 var(--f-display); letter-spacing: -.03em; margin: 22px 0 22px; text-wrap: balance; }
+.ogrid { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); gap: clamp(28px, 5vw, 80px); align-items: start; }
+@media (max-width: 900px) { .ogrid { grid-template-columns: 1fr; } }
+/* IAN floats on the left on wide screens, so push the copy right */
+@media (min-width: 901px) { .og-head { padding-left: 0; } }
+.og-body { display: grid; gap: 22px; min-width: 0; }
+.links { list-style: none; margin: 0; padding: 0; border: 1px solid var(--rule); border-radius: 8px; background: rgba(5,15,36,.86); overflow: hidden; }
+.links li { display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: 14px; align-items: center; padding: 14px 18px; border-bottom: 1px solid var(--rule); }
+.links li:last-child { border-bottom: 0; }
+.links span { font: 400 .68rem/1 var(--f-mono); letter-spacing: .16em; text-transform: uppercase; color: var(--tide); }
+.links a, .links code { font: 500 .95rem/1.4 var(--f-mono); color: var(--glow); overflow-wrap: anywhere; }
+.links a { text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.checklist { margin: 0; padding: 0; list-style: none; counter-reset: c; display: grid; gap: 1px; background: var(--rule); border: 1px solid var(--rule); border-radius: 8px; overflow: hidden; }
+.checklist li { counter-increment: c; background: rgba(5,15,36,.86); padding: 16px 18px 16px 58px; position: relative; color: var(--tide); font-size: .96rem; }
+.checklist li::before { content: counter(c, decimal-leading-zero); position: absolute; left: 18px; top: 17px; font: 500 .75rem/1 var(--f-mono); color: var(--glow); }
+.checklist b { color: var(--foam); font-weight: 600; }
+
 /* powers */
 .powers h2, .lore h2, .terminal-sec h2, .pass-sec h2 { font: 700 var(--big)/1 var(--f-display); letter-spacing: -.03em; margin: 22px 0 22px; text-wrap: balance; }
 .power-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px; background: var(--rule); border: 1px solid var(--rule); border-radius: 8px; overflow: hidden; margin-top: 48px; }
@@ -343,10 +411,15 @@ footer .legal { display: flex; flex-wrap: wrap; justify-content: space-between; 
 
 <div id="loader" aria-hidden="true">
   <div class="count"><span id="pct">0</span>%</div>
+  <pre class="boot" id="boot"></pre>
   <div class="note">Receiving transmission</div>
 </div>
 
 <div class="progress" id="progress"></div>
+<canvas id="matrix" class="matrix" hidden aria-hidden="true"></canvas>
+<div class="crt" aria-hidden="true"></div>
+<pre class="hud" id="hud" hidden aria-live="off"></pre>
+
 
 <header class="bar">
   <a class="brand" href="#top" data-cursor="Top">IAN<sup>HOLO</sup></a>
@@ -365,7 +438,8 @@ footer .legal { display: flex; flex-wrap: wrap; justify-content: space-between; 
   <a href="#terminal">Talk to IAN</a>
   <a href="#pass">Get a pass</a>
   <a href="#token">Token</a>
-  <small>@IAN_holo · Code with purpose. Build with vision.</small>
+  <a href="#official">Official links</a>
+  <small>There might be a code<br>@IAN_holo · Code with purpose. Build with vision.</small>
 </nav>
 
 <div class="corner bl" aria-hidden="true">Scroll to go deeper</div>
@@ -487,8 +561,10 @@ footer .legal { display: flex; flex-wrap: wrap; justify-content: space-between; 
           <button type="button" data-say="how do I stay safe from scams?">scam check</button>
           <button type="button" data-say="tell me a joke">joke</button>
           <button type="button" data-say="motivate me">motivate me</button>
+          <button type="button" data-say="neofetch">neofetch</button>
+          <button type="button" data-say="decrypt">decrypt</button>
         </div>
-        <p class="fine">Commands: <code>clear</code> · <code>forget</code>. IAN is an AI character, not financial advice.</p>
+        <p class="fine">Talk normally, or run commands: <code>help</code> · <code>neofetch</code> · <code>ls</code> · <code>decrypt</code> · <code>matrix</code> · <code>hud</code>. Press <code>`</code> for the HUD. There might be a code. IAN is an AI character, not financial advice.</p>
       </div>
       <div class="term" id="term">
         <div class="term-top"><i></i><i></i><i></i><span>ian@deep ~</span><span class="status" id="brainStatus"><b></b>local core</span></div>
@@ -507,14 +583,17 @@ footer .legal { display: flex; flex-wrap: wrap; justify-content: space-between; 
       <div>
         <span class="label">IAN Pass</span>
         <h2 class="lines"><span><span>Get your</span></span><span><span>builder pass.</span></span></h2>
-        <p style="color:var(--tide);max-width:40ch">Every builder IAN works with gets a holo pass. Make yours, save it, post it, tag @IAN_holo. Echo remembers.</p>
+        <p style="color:var(--tide);max-width:40ch">Pick a skin, roll your rarity, flex your stats. Every name rolls a different card. One skin is hidden until you crack the puzzle in the terminal.</p>
         <form class="pass-form" id="passForm">
           <label for="passName">Your name or @</label>
           <input id="passName" name="name" type="text" maxlength="20" value="@cashhhlii">
           <label for="passRole">Your role</label>
           <select id="passRole" name="role">
-            <option>Builder</option><option>Dreamer</option><option>Guardian</option><option>Artist</option><option>Explorer</option>
+            <option>Builder</option><option>Dreamer</option><option>Guardian</option><option>Artist</option><option>Explorer</option><option>Degen</option><option>Hacker</option>
           </select>
+          <span class="flabel" id="skinLabel">Skin</span>
+          <div class="skins" id="passSkins" role="group" aria-labelledby="skinLabel"></div>
+          <p class="rarity">Rarity · <b id="passRarity">COMMON</b> <span>(rolled from your name)</span></p>
           <div class="btns">
             <button class="btn" type="submit" data-cursor="Make">Make my pass</button>
             <button class="btn line" type="button" id="passSave" data-cursor="Save">Save image</button>
@@ -557,9 +636,34 @@ footer .legal { display: flex; flex-wrap: wrap; justify-content: space-between; 
       </div>
     </div>
   </section>
+  <section class="sec official" id="official" data-pose="7">
+    <div class="inner ogrid">
+      <div class="og-head">
+        <span class="label">Guardian Mode</span>
+        <h2 class="lines"><span><span>Official links.</span></span><span><span>Nothing else.</span></span></h2>
+        <p style="color:var(--tide);max-width:40ch">If it isn't listed here, it isn't IAN. Bookmark this page and come back to it before you click anything.</p>
+      </div>
+      <div class="og-body">
+        <ul class="links" id="officialLinks">
+          <li><span>Website</span><a id="siteLink" href="https://casimirterr.github.io/IAN_holo/" target="_blank" rel="noopener">casimirterr.github.io/IAN_holo</a></li>
+          <li><span>X</span><a href="https://x.com/IAN_holo" target="_blank" rel="noopener">@IAN_holo</a></li>
+          <li data-only="telegram"><span>Telegram</span><a data-link="telegram" href="#official" target="_blank" rel="noopener">t.me</a></li>
+          <li data-only="discord"><span>Discord</span><a data-link="discord" href="#official" target="_blank" rel="noopener">discord</a></li>
+          <li><span>Contract</span><code id="caMirror">posted by @IAN_holo only</code></li>
+        </ul>
+        <ol class="checklist">
+          <li><b>We never DM first.</b> Not the team, not IAN, not "support". Anyone who messages you first is not us.</li>
+          <li><b>No one needs your seed phrase.</b> Ever. Not to verify, not to claim, not to fix anything.</li>
+          <li><b>There is no surprise airdrop.</b> "Connect your wallet to claim" is how wallets get drained.</li>
+          <li><b>Check the contract twice.</b> Copy it from this page or @IAN_holo, then compare the first and last 4 characters.</li>
+          <li><b>Fake accounts copy our name.</b> Check the exact handle: @IAN_holo, nothing added.</li>
+        </ol>
+      </div>
+    </div>
+  </section>
 </main>
 
-<footer id="community" data-pose="7">
+<footer id="community" data-pose="8">
   <div class="inner">
     <div class="cta-row">
       <div>
@@ -582,6 +686,8 @@ footer .legal { display: flex; flex-wrap: wrap; justify-content: space-between; 
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="brain.js"></script>
+<script src="labs.js"></script>
+<script src="pass.js"></script>
 <script>
 // =====================================================================
 //  EDIT THIS: token + links. Empty strings hide or grey out buttons.
@@ -660,6 +766,11 @@ addEventListener("scroll", cornerToggle, { passive: true }); cornerToggle();
 // ---------- loader ----------
 const loader = $("#loader"), pctEl = $("#pct");
 const t0 = performance.now(); let loadedAt = 0, done = false;
+(function boot() {
+  const lines = ["[ok] mounting /dev/deep", "[ok] calibrating current .......... 0.06 Hz", "[ok] loading dream_drift.ko", "[ok] code_sight: online", "[ok] guardian_mode: armed", "[ok] echo: " + ((window.IANBrain && IANBrain.mem.visits) || 1) + " visit(s) in memory", "[..] waking IAN"];
+  const el = document.getElementById("boot"); let i = 0;
+  (function next() { if (i >= lines.length || done) return; el.textContent += lines[i++] + "\n"; setTimeout(next, 220); })();
+})();
 const finish = () => { if (!loadedAt) loadedAt = performance.now(); };
 const hide = () => { if (done) return; done = true; pctEl.textContent = 100; setTimeout(() => loader.classList.add("out"), 120); };
 setTimeout(finish, 2200);                        // never wait long for the texture
@@ -712,7 +823,7 @@ $$(".power").forEach(p => p.addEventListener("pointermove", e => {
     line("> " + raw, "u");
     if (cmd === "clear") { out.textContent = ""; return; }
     if (cmd === "forget") { brain.forget(); line("memory wiped. who are you again?", "d"); return; }
-    if (cmd === "help") { line("just talk to me. or try: call me ___ · I'm building ___ · dream · scams · joke · time · clear · forget", "d"); return; }
+    if (window.IANLabs && await window.IANLabs.run(raw, line)) return;
 
     busy = true;
     const p = line("", "ian dots");
@@ -735,13 +846,24 @@ $$(".power").forEach(p => p.addEventListener("pointermove", e => {
   }));
 
   const d = brain.dailyTransmission();
-  line(`IAN v2.0 · channel open · ${IAN.brain ? "full brain online" : "local core online"}`, "d");
+  window.IANTerminal = send;
+  line(`IAN v2.1 · channel open · ${IAN.brain ? "full brain online" : "local core online"} · type help for commands`, "d");
   line(`transmission #${String(d.n).padStart(3, "0")}: ${d.text}`, "d");
   const m = brain.mem;
   const hello = m.name
     ? `${m.name}. visit #${m.visits}. ${m.building ? "how's " + m.building + " going?" : "what are we building tonight?"}`
     : "hey. I'm IAN. tell me your name, or just say what's on your mind.";
   line(hello, "ian");
+})();
+
+// ---------- official links ----------
+(function official() {
+  $$("#officialLinks [data-only]").forEach(li => { if (!IAN.links[li.dataset.only]) li.hidden = true; else { const a = li.querySelector("a"); a.textContent = IAN.links[li.dataset.only].replace(/^https?:\/\//, ""); } });
+  if (IAN.contract) $("#caMirror").textContent = IAN.contract;
+  if (location.protocol.startsWith("http") && /github\.io|\./.test(location.hostname) && !/claude|localhost/.test(location.hostname)) {
+    const here = location.origin + location.pathname.replace(/index\.html$/, "");
+    $("#siteLink").href = here; $("#siteLink").textContent = here.replace(/^https?:\/\//, "").replace(/\/$/, "");
+  }
 })();
 
 // ---------- daily transmission in the hero ----------
@@ -811,85 +933,7 @@ $$(".power").forEach(p => p.addEventListener("pointermove", e => {
   setInterval(() => { if (last) $("#mAgo").textContent = Math.round((Date.now() - last) / 1000) + "s ago"; }, 1000);
 })();
 
-// ---------- IAN pass generator ----------
-(function pass() {
-  const cv = $("#passCanvas"), g = cv.getContext("2d"), W = cv.width, H = cv.height;
-  const art = new Image(); art.src = "assets/ian-float.webp";
-  const nameEl = $("#passName"), roleEl = $("#passRole");
-  const hash = s => { let h = 2166136261; for (const c of s) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return (h >>> 0); };
-  const font = (w, size, fam) => `${w} ${size}px ${fam}`;
-  const DISPLAY = '"Syne", "Arial Black", sans-serif', MONO = '"JetBrains Mono", Consolas, monospace';
 
-  function draw() {
-    const name = (nameEl.value.trim() || "Anonymous").slice(0, 20);
-    const role = roleEl.value, h = hash(name + role), id = "IAN-" + String(h % 100000).padStart(5, "0");
-    // card body
-    const r = 44;
-    g.clearRect(0, 0, W, H); g.save();
-    g.beginPath(); g.roundRect ? g.roundRect(0, 0, W, H, r) : g.rect(0, 0, W, H); g.clip();
-    const bg = g.createLinearGradient(0, 0, 0, H); bg.addColorStop(0, "#0b2a5c"); bg.addColorStop(.55, "#061532"); bg.addColorStop(1, "#020815");
-    g.fillStyle = bg; g.fillRect(0, 0, W, H);
-    // currents, seeded by the name so every pass is a little different
-    g.lineWidth = 1.5;
-    for (let k = 0; k < 18; k++) {
-      g.strokeStyle = `rgba(95,180,255,${.06 + (k % 4) * .03})`; g.beginPath();
-      const off = (h >> (k % 16)) % 100;
-      for (let x = -20; x <= W + 20; x += 10) {
-        const y = 80 + k * 52 + Math.sin(x / 90 + k * .7 + off) * 26 + Math.sin(x / 37 + off) * 8;
-        x < 0 ? g.moveTo(x, y) : g.lineTo(x, y);
-      }
-      g.stroke();
-    }
-    // glow behind IAN
-    const gl = g.createRadialGradient(W / 2, H * .42, 10, W / 2, H * .42, W * .55);
-    gl.addColorStop(0, "rgba(166,236,255,.45)"); gl.addColorStop(1, "rgba(166,236,255,0)");
-    g.fillStyle = gl; g.fillRect(0, 0, W, H);
-    if (art.complete && art.naturalWidth) {
-      const ah = H * .62, aw = ah * art.naturalWidth / art.naturalHeight;
-      g.shadowColor = "rgba(166,236,255,.9)"; g.shadowBlur = 40;
-      g.drawImage(art, (W - aw) / 2, H * .1, aw, ah); g.shadowBlur = 0;
-    }
-    // ripples
-    g.strokeStyle = "rgba(166,236,255,.5)";
-    for (let i = 1; i <= 3; i++) { g.lineWidth = 2 / i; g.beginPath(); g.ellipse(W / 2, H * .73, 60 * i, 12 * i, 0, 0, Math.PI * 2); g.stroke(); }
-    // holo sheen
-    const sh = g.createLinearGradient(0, 0, W, H);
-    sh.addColorStop(.2, "rgba(255,255,255,0)"); sh.addColorStop(.45, "rgba(166,236,255,.10)"); sh.addColorStop(.55, "rgba(197,170,255,.10)"); sh.addColorStop(.75, "rgba(255,255,255,0)");
-    g.fillStyle = sh; g.fillRect(0, 0, W, H);
-    // header
-    g.fillStyle = "#eaf5ff"; g.font = font(800, 40, DISPLAY); g.textBaseline = "top"; g.fillText("IAN", 44, 40);
-    g.font = font(500, 18, MONO); g.fillStyle = "#a6ecff"; g.textAlign = "right"; g.fillText("BUILDER PASS", W - 44, 52); g.textAlign = "left";
-    // footer panel
-    g.fillStyle = "rgba(2,8,21,.72)"; g.fillRect(0, H * .79, W, H * .21);
-    g.strokeStyle = "rgba(166,236,255,.25)"; g.lineWidth = 1; g.beginPath(); g.moveTo(0, H * .79); g.lineTo(W, H * .79); g.stroke();
-    g.fillStyle = "#eaf5ff"; let fs = 52; g.font = font(800, fs, DISPLAY);
-    while (g.measureText(name).width > W - 88 && fs > 24) { fs -= 2; g.font = font(800, fs, DISPLAY); }
-    g.fillText(name, 44, H * .815);
-    g.font = font(500, 18, MONO); g.fillStyle = "#8ea6cc";
-    g.fillText(`${role.toUpperCase()}  ·  ${id}  ·  ${new Date().getFullYear()}`, 44, H * .815 + fs + 16);
-    g.fillStyle = "#a6ecff"; g.fillText("CODE WITH PURPOSE. BUILD WITH VISION.", 44, H * .815 + fs + 46);
-    // id dots
-    for (let i = 0; i < 24; i++) if ((h >> i) & 1) { g.fillStyle = "rgba(166,236,255,.8)"; g.fillRect(W - 44 - (i % 6) * 12, 110 + Math.floor(i / 6) * 12, 8, 8); }
-    g.restore();
-    // border
-    g.strokeStyle = "rgba(166,236,255,.45)"; g.lineWidth = 3; g.beginPath(); g.roundRect ? g.roundRect(1.5, 1.5, W - 3, H - 3, r) : g.rect(1.5, 1.5, W - 3, H - 3); g.stroke();
-  }
-  art.onload = draw; draw();
-  (document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve()).then(draw);
-  nameEl.addEventListener("input", draw); roleEl.addEventListener("change", draw);
-  $("#passForm").addEventListener("submit", e => { e.preventDefault(); draw(); cv.animate && !reduce && cv.animate([{ transform: "rotateY(0)" }, { transform: "rotateY(360deg)" }], { duration: 900, easing: "cubic-bezier(.16,1,.3,1)" }); });
-  $("#passSave").addEventListener("click", () => {
-    try {
-      const a = document.createElement("a"); a.download = "ian-pass.png"; a.href = cv.toDataURL("image/png"); a.click();
-      $("#passHint").textContent = "Saved. Post it and tag @IAN_holo.";
-    } catch (err) { $("#passHint").textContent = "Your browser blocked the download. Right-click the pass (or long-press on a phone) to save it."; }
-  });
-  if (!reduce) {
-    const wrap = $(".pass-wrap");
-    wrap.addEventListener("pointermove", e => { const b = wrap.getBoundingClientRect(); cv.style.transform = `rotateY(${((e.clientX - b.left) / b.width - .5) * 16}deg) rotateX(${(.5 - (e.clientY - b.top) / b.height) * 16}deg)`; });
-    wrap.addEventListener("pointerleave", () => cv.style.transform = "");
-  }
-})();
 
 // =====================================================================
 //  THE STAGE: IAN floating in deep water
@@ -900,7 +944,12 @@ $$(".power").forEach(p => p.addEventListener("pointermove", e => {
   let renderer;
   try { renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false, powerPreference: "high-performance" }); }
   catch (e) { canvas.hidden = true; $("#fallback").hidden = false; finish(); return; }
-  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 1.75));
+  // pick a quality level for this device, then keep adjusting to real frame rate
+  const coarse = matchMedia("(pointer: coarse)").matches;
+  const cores = navigator.hardwareConcurrency || 4;
+  const lowEnd = coarse || cores <= 4 || (navigator.deviceMemory && navigator.deviceMemory <= 4);
+  let pr = Math.min(devicePixelRatio || 1, lowEnd ? 1.25 : 1.75);
+  renderer.setPixelRatio(pr);
   renderer.setClearColor(0x030916, 1);
 
   const scene = new THREE.Scene();
@@ -917,13 +966,14 @@ $$(".power").forEach(p => p.addEventListener("pointermove", e => {
     vertexShader: `varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, .9999, 1.); }`,
     fragmentShader: `
       precision highp float;
+      #define OCT ${lowEnd ? 3 : 5}
       varying vec2 vUv; uniform float uTime; uniform vec2 uMouse; uniform vec2 uRes; uniform float uScroll;
       vec3 hash3(vec2 p){ vec3 q = vec3(dot(p,vec2(127.1,311.7)), dot(p,vec2(269.5,183.3)), dot(p,vec2(419.2,371.9))); return fract(sin(q)*43758.5453); }
       float noise(vec2 p){ vec2 i=floor(p), f=fract(p); vec2 u=f*f*(3.-2.*f);
         float a=dot(hash3(i).xy-.5, f), b=dot(hash3(i+vec2(1,0)).xy-.5, f-vec2(1,0)),
               c=dot(hash3(i+vec2(0,1)).xy-.5, f-vec2(0,1)), d=dot(hash3(i+vec2(1,1)).xy-.5, f-vec2(1,1));
         return mix(mix(a,b,u.x), mix(c,d,u.x), u.y); }
-      float fbm(vec2 p){ float s=0., a=.5; for(int i=0;i<5;i++){ s+=a*noise(p); p*=2.03; a*=.5; } return s; }
+      float fbm(vec2 p){ float s=0., a=.5; for(int i=0;i<OCT;i++){ s+=a*noise(p); p*=2.03; a*=.5; } return s; }
       void main(){
         vec2 uv = vUv; vec2 p = (uv - .5) * vec2(uRes.x/uRes.y, 1.) * 1.15;
         p.y += uScroll * 1.2;
@@ -956,7 +1006,7 @@ $$(".power").forEach(p => p.addEventListener("pointermove", e => {
   const group = new THREE.Group(); scene.add(group);
   const ianMat = new THREE.ShaderMaterial({
     transparent: true, depthWrite: false,
-    uniforms: { uTex: { value: null }, uTime: { value: 0 }, uMouse: { value: new THREE.Vector2() }, uHover: { value: 0 }, uTexel: { value: new THREE.Vector2(1/900, 1/1055) }, uReveal: { value: 0 }, uFade: { value: 1 }, uTalk: { value: 0 } },
+    uniforms: { uTex: { value: null }, uTime: { value: 0 }, uMouse: { value: new THREE.Vector2() }, uHover: { value: 0 }, uTexel: { value: new THREE.Vector2(1/900, 1/1055) }, uReveal: { value: 0 }, uFade: { value: 1 }, uTalk: { value: 0 }, uGlitch: { value: 0 } },
     vertexShader: `
       varying vec2 vUv; uniform float uTime; uniform float uHover;
       void main(){
@@ -969,16 +1019,24 @@ $$(".power").forEach(p => p.addEventListener("pointermove", e => {
       }`,
     fragmentShader: `
       precision highp float;
-      varying vec2 vUv; uniform sampler2D uTex; uniform float uTime; uniform vec2 uMouse; uniform float uHover; uniform vec2 uTexel; uniform float uReveal; uniform float uFade; uniform float uTalk;
+      #define HS ${lowEnd ? 8 : 12}
+      #define HR ${lowEnd ? 2 : 3}
+      varying vec2 vUv; uniform sampler2D uTex; uniform float uTime; uniform vec2 uMouse; uniform float uHover; uniform vec2 uTexel; uniform float uReveal; uniform float uFade; uniform float uTalk; uniform float uGlitch;
       float a(vec2 uv){ return texture2D(uTex, uv).a; }
       void main(){
         vec2 uv = vUv;
         // gentle underwater wobble
         uv.x += sin(uv.y * 22. + uTime * 1.4) * .0025;
+        // glitch: random horizontal slices jump sideways, colors split
+        float row = floor(uv.y * 48. + floor(uTime * 14.));
+        float jump = step(.9, fract(sin(row * 91.7) * 43758.5)) * uGlitch;
+        uv.x += jump * .06 * sin(uTime * 40. + row);
         vec4 c = texture2D(uTex, uv);
+        c.r = mix(c.r, texture2D(uTex, uv + vec2(.008, 0.) * uGlitch).r, uGlitch);
+        c.b = mix(c.b, texture2D(uTex, uv - vec2(.008, 0.) * uGlitch).b, uGlitch);
         // halo from blurred alpha
-        float h = 0.; for (int i = 0; i < 12; i++){ float an = float(i) / 12. * 6.2831; for (int j = 1; j <= 3; j++){ h += a(uv + vec2(cos(an), sin(an)) * uTexel * float(j) * 9.); } }
-        h /= 36.;
+        float h = 0.; for (int i = 0; i < HS; i++){ float an = float(i) / float(HS) * 6.2831; for (int j = 1; j <= HR; j++){ h += a(uv + vec2(cos(an), sin(an)) * uTexel * float(j) * (27. / float(HR))); } }
+        h /= float(HS * HR);
         float halo = clamp(h * 1.6 - c.a, 0., 1.);
         // rim light where alpha falls off
         float rim = smoothstep(.97, .55, h) * c.a;
@@ -999,11 +1057,27 @@ $$(".power").forEach(p => p.addEventListener("pointermove", e => {
   const IAN_H = 5.2, IAN_W = IAN_H * 900 / 1055;
   const ian = new THREE.Mesh(new THREE.PlaneGeometry(IAN_W, IAN_H, 24, 32), ianMat);
   group.add(ian);
+  const wireMesh = new THREE.Mesh(ian.geometry, new THREE.MeshBasicMaterial({ color: 0x7df3ff, wireframe: true, transparent: true, opacity: .35, depthWrite: false }));
+  wireMesh.visible = false; group.add(wireMesh);
+
+  // if IAN can't be drawn in 3D on this device, float a plain version instead
+  function useFallback(reason) {
+    if (window.__ianFallback) return; window.__ianFallback = reason;
+    const fb = $("#fallback"); fb.hidden = false; fb.style.background = "transparent"; fb.style.zIndex = "1"; fb.style.pointerEvents = "none";
+  }
+  const origErr = console.error;
+  console.error = function () { try { if (/shader|WebGLProgram|program not valid/i.test(String(arguments[0]))) useFallback("shader"); } catch (e) {} return origErr.apply(this, arguments); };
+  canvas.addEventListener("webglcontextlost", () => useFallback("context lost"));
+  setTimeout(() => { if (!ianMat.uniforms.uTex.value) useFallback("texture"); }, 5000);
 
   new THREE.TextureLoader().load("assets/ian-float.webp", tex => {
     tex.minFilter = THREE.LinearFilter; tex.generateMipmaps = false;
     ianMat.uniforms.uTex.value = tex; texAt = performance.now() + (reduce ? -2000 : 600); finish();
-  }, undefined, () => { finish(); });
+  }, undefined, () => {
+    // the texture loader failed: retry with a plain <img>, then fall back to the 2D IAN
+    const im = new Image(); im.onload = () => { const t = new THREE.Texture(im); t.needsUpdate = true; t.minFilter = THREE.LinearFilter; t.generateMipmaps = false; ianMat.uniforms.uTex.value = t; texAt = performance.now(); };
+    im.onerror = () => useFallback("texture"); im.src = "assets/ian-float.webp"; finish();
+  });
 
   // ---- 3. ripples under his feet ----
   const rippleMat = new THREE.ShaderMaterial({
@@ -1025,14 +1099,14 @@ $$(".power").forEach(p => p.addEventListener("pointermove", e => {
   group.add(ripple);
 
   // ---- 4. rising light motes ----
-  const N = 420, mp = new Float32Array(N * 3), ms = new Float32Array(N);
+  const N = lowEnd ? 160 : 420, mp = new Float32Array(N * 3), ms = new Float32Array(N);
   for (let i = 0; i < N; i++) { mp[i*3] = (Math.random()-.5) * 16; mp[i*3+1] = (Math.random()-.5) * 12; mp[i*3+2] = (Math.random()-.5) * 6 - 1; ms[i] = Math.random(); }
   const mGeo = new THREE.BufferGeometry();
   mGeo.setAttribute("position", new THREE.BufferAttribute(mp, 3));
   mGeo.setAttribute("seed", new THREE.BufferAttribute(ms, 1));
   const motes = new THREE.Points(mGeo, new THREE.ShaderMaterial({
     transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
-    uniforms: { uTime: { value: 0 }, uPR: { value: renderer.getPixelRatio() } },
+    uniforms: { uTime: { value: 0 }, uPR: { value: pr } },
     vertexShader: `
       attribute float seed; uniform float uTime; uniform float uPR; varying float vA;
       void main(){
@@ -1055,11 +1129,21 @@ $$(".power").forEach(p => p.addEventListener("pointermove", e => {
     { x: -3.3, y: -1.5, s: .6,  r: .35 },  // terminal: bottom left, under the chips
     { x: -.35, y: -.1, s: .72, r: .1 },    // pass: between the form and the card
     { x: 3.4,  y: -.1, s: .85, r: -.3 },   // token: right of the card
+    { x: -3.4, y: -.2, s: .8,  r: .3 },    // official: left, beside the checklist
     { x: 0,    y: .6,  s: .75, r: 0 }      // footer: center
   ];
   const secs = $$("[data-pose]");
   const cur = { x: 0, y: -3, s: 1, r: 0 }; let fadeT = 1, talk = 0;
-  window.ianTalk = v => { talk = Math.min(1, Math.max(talk, v)); };            // starts low, rises in
+  window.ianTalk = v => { talk = Math.min(1, Math.max(talk, v)); };
+  let glitchT = 0, glitchV = 0, over = false, gpuName = "";
+  try { const gl = renderer.getContext(), ext = gl.getExtension("WEBGL_debug_renderer_info"); gpuName = ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER); } catch (e) {}
+  gpuName = String(gpuName).replace(/ANGLE \((.*)\)/, "$1").replace(/, .*$/, "");
+  window.IANStage = {
+    glitch: v => { glitchT = v; },
+    wire: on => { wireMesh.visible = on; },
+    overdrive: on => { over = on; glitchT = on ? 1 : 0; },
+    info: () => ({ pr, gpu: gpuName, pos: `${cur.x.toFixed(2)}, ${cur.y.toFixed(2)}`, scale: cur.s.toFixed(2), talk: talk.toFixed(2) })
+  };            // starts low, rises in
 
   // hover: is the pointer over IAN on screen?
   const ray = new THREE.Raycaster(); let hover = 0;
@@ -1082,14 +1166,26 @@ $$(".power").forEach(p => p.addEventListener("pointermove", e => {
     const narrow = innerWidth < 860;
     const lerp = (p, q) => p + (q - p) * e;
     fadeT = narrow && i > 0 ? .28 : 1;
-    return { x: narrow ? 0 : lerp(A.x, B.x), y: narrow ? lerp(A.y, B.y) + .6 : lerp(A.y, B.y), s: (narrow ? .78 : 1) * lerp(A.s, B.s), r: narrow ? 0 : lerp(A.r, B.r) };
+    const nY = i === 0 ? 1.5 : .6;   // on phones, lift IAN above the hero text
+    return { x: narrow ? 0 : lerp(A.x, B.x), y: narrow ? lerp(A.y, B.y) + nY : lerp(A.y, B.y), s: (narrow ? (i === 0 ? .62 : .78) : 1) * lerp(A.s, B.s), r: narrow ? 0 : lerp(A.r, B.r) };
   }
 
   let visible = true; document.addEventListener("visibilitychange", () => visible = !document.hidden);
   const clock = new THREE.Clock(); const k = reduce ? .2 : 1;
+  // frame-rate watchdog: if it stutters, drop resolution a step (never below 0.9 so IAN stays sharp)
+  let fpsFrames = 0, fpsStart = performance.now();
+  function watchdog() {
+    fpsFrames++;
+    const el = performance.now() - fpsStart;
+    if (el > 2000) {
+      const fps = fpsFrames * 1000 / el; fpsFrames = 0; fpsStart = performance.now();
+      if (fps < 42 && pr > .9) { pr = Math.max(.9, pr - .2); renderer.setPixelRatio(pr); resize(); motes.material.uniforms.uPR.value = pr; }
+    }
+  }
   function frame() {
     requestAnimationFrame(frame);
     if (!visible) return;
+    watchdog();
     const t = clock.getElapsedTime() * k;
     mouseS.lerp(mouse, .06);
     smoothY += (sY - smoothY) * .1;
@@ -1113,6 +1209,8 @@ $$(".power").forEach(p => p.addEventListener("pointermove", e => {
     ianMat.uniforms.uTime.value = t; ianMat.uniforms.uHover.value = hover;
     ianMat.uniforms.uFade.value += (fadeT - ianMat.uniforms.uFade.value) * .06; rippleMat.uniforms.uHover.value = hover;
     talk *= .94; ianMat.uniforms.uTalk.value = talk; rippleMat.uniforms.uTalk.value = talk;
+    glitchV += (glitchT - glitchV) * .1; ianMat.uniforms.uGlitch.value = glitchV * (over ? .8 + .2 * Math.sin(t * 9.) : 1);
+    if (over) talk = Math.max(talk, .6 + .4 * Math.sin(t * 6.));
     rippleMat.uniforms.uTime.value = t; rippleMat.uniforms.uHover.value = hover;
     motes.material.uniforms.uTime.value = t;
     bgMat.uniforms.uTime.value = t; bgMat.uniforms.uMouse.value.copy(mouseS);

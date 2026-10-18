@@ -18,8 +18,15 @@ Futuristic one-page site where IAN floats in a real-time WebGL scene: deep flowi
 - **Abilities**: Dream Drift, Code Sight, The Cube, Guardian Mode, Echo, Signal
 - **Lore**: five chapters pulled from the @IAN_holo timeline
 - **Talk to IAN**: he talks back. Local AI core in `brain.js` (memory, moods, 40+ topics, scam warnings) that works with no server, plus an optional real-model brain through a Cloudflare Worker (`worker/`). He glows in 3D while he talks
-- **IAN Pass**: type your name, get a holo builder card drawn on canvas, save it and post it
+- **IAN Pass** (`pass.js`): 9 skins (IAN's art + generated Matrix/Grid + a secret Decoder skin), rarity tiers (Common → Mythic) and stats rolled from your name, foil on rare cards, save as PNG
+- **Nerd layer** (`labs.js`):
+  - Terminal commands: `help`, `ls -a`, `cat`, `neofetch`, `history`, `hash` (real SHA-256), `b64`/`unb64`, `ping`, `uptime`, `sudo`…
+  - `decrypt`: a 3-stage hex → base64 → caesar puzzle that unlocks the Decoder pass skin
+  - Modes: CRT monitor, Matrix rain, glitch IAN (shader slice + RGB split), wireframe IAN, live debug HUD (`` ` `` key: fps, GPU, IAN position)
+  - Konami code (↑↑↓↓←→←→BA) → overdrive
+  - Boot sequence on load
 - **Token**: ticker, chain, contract address with copy button, and live price / market cap / liquidity / volume from DexScreener once the contract is set
+- **Official links + Guardian checklist**: the only real links, and five rules that stop people getting drained
 - **Daily transmission**: a new message from IAN every day
 - **Ambient sound**: an underwater drone generated live with the Web Audio API (no audio files)
 
@@ -62,6 +69,9 @@ Empty links hide (Telegram, Discord) or grey out (Buy, Chart) their buttons, so 
 Repo **Settings → Pages → Source: Deploy from a branch → main / (root)**. It goes live at `https://<username>.github.io/<repo>/` in about a minute.
 
 ## Notes
+
+- Share cards: `assets/og.jpg` (1200×630) is set as the preview image for X, Discord and iMessage
+- 3D quality adapts to the device: phones and low-core machines get fewer particles and lighter shaders, and a frame-rate watchdog lowers resolution if it ever stutters
 
 - Respects `prefers-reduced-motion` (slows the scene way down, turns off the other animations)
 - Pauses rendering when the tab is hidden
