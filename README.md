@@ -2,7 +2,6 @@
 
 Website for **IAN**, the AI guardian who builds beside you. Follow along at [@IAN_holo](https://x.com/IAN_holo).
 
-Futuristic one-page site with a real-time 3D scene: IAN's holographic cube (a cube inside a cube, like the one in the art) spinning inside light rings, with floating shards, drifting city-light particles and a holo grid floor. It follows your mouse.
 
 ## Built with
 
