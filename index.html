@@ -1,0 +1,626 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22><rect x=%227%22 y=%227%22 width=%2218%22 height=%2218%22 transform=%22rotate(45 16 16)%22 fill=%22none%22 stroke=%22%237df3ff%22 stroke-width=%223%22/></svg>">
+<title>IAN Holo</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="IAN — the AI guardian that builds beside you.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Figtree:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one neon-city night. Full-bleed 3D hero, then a narrow column of glass panels that float over the skyline glow. */
+:root {
+  --night: #070612;        /* sky behind the city */
+  --night-2: #110d24;      /* panel base */
+  --holo: #7df3ff;         /* the cube's cyan */
+  --dusk: #c58cff;         /* violet city haze */
+  --ember: #ff7ab8;        /* window-light pink */
+  --frost: #eef3ff;        /* text */
+  --mist: #9aa3c7;         /* secondary text, violet-biased grey */
+  --line: rgba(125, 243, 255, .18);
+  --glass: rgba(17, 13, 36, .62);
+
+  --f-display: "Unbounded", "Arial Black", system-ui, sans-serif;
+  --f-body: "Figtree", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+
+  --step-0: clamp(1rem, .95rem + .25vw, 1.125rem);
+  --step-1: clamp(1.25rem, 1.1rem + .6vw, 1.6rem);
+  --step-2: clamp(1.7rem, 1.3rem + 1.6vw, 2.6rem);
+  --step-hero: clamp(4.5rem, 2rem + 14vw, 13rem);
+
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: var(--night);
+  color: var(--frost);
+  font: 400 var(--step-0)/1.6 var(--f-body);
+  overflow-x: hidden;
+}
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+/* city glow sits behind everything */
+.sky {
+  position: fixed; inset: 0; z-index: -2; pointer-events: none;
+  background:
+    radial-gradient(60% 45% at 70% 8%, rgba(197, 140, 255, .28), transparent 70%),
+    radial-gradient(50% 40% at 15% 30%, rgba(255, 122, 184, .14), transparent 70%),
+    radial-gradient(70% 50% at 50% 110%, rgba(125, 243, 255, .16), transparent 70%),
+    var(--night);
+}
+.skyline {
+  position: fixed; inset: auto 0 0 0; height: 38vh; z-index: -1; pointer-events: none;
+  opacity: .5;
+  -webkit-mask-image: linear-gradient(to top, #000 10%, transparent);
+          mask-image: linear-gradient(to top, #000 10%, transparent);
+}
+
+.wrap {
+  width: 100%;
+  max-width: 1120px;
+  margin-inline: auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+
+/* ---------- nav ---------- */
+body::before {
+  content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px);
+  z-index: 10; background: var(--night);
+}
+nav {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  background: rgba(7, 6, 18, .55);
+  border-bottom: 1px solid var(--line);
+}
+nav .wrap { display: flex; align-items: center; gap: 24px; padding-block: 14px; }
+.logo {
+  font: 900 1.15rem/1 var(--f-display); letter-spacing: .08em; color: var(--frost);
+  text-decoration: none; display: flex; align-items: center; gap: 10px;
+}
+.logo i {
+  width: 18px; height: 18px; border: 2px solid var(--holo); display: inline-block;
+  transform: rotate(45deg); box-shadow: 0 0 12px var(--holo), inset 0 0 6px var(--holo);
+}
+.navlinks { display: flex; gap: 22px; margin-left: auto; }
+.navlinks a {
+  color: var(--mist); text-decoration: none; font: 500 .8rem/1 var(--f-mono);
+  letter-spacing: .12em; text-transform: uppercase;
+}
+.navlinks a:hover, .navlinks a:focus-visible { color: var(--holo); }
+@media (max-width: 720px) { .navlinks { display: none; } nav .btn { margin-left: auto; } }
+
+/* ---------- buttons ---------- */
+.btn {
+  display: inline-flex; align-items: center; gap: 10px;
+  font: 600 .95rem/1 var(--f-body); text-decoration: none; cursor: pointer;
+  padding: 14px 22px; border-radius: 999px; border: 1px solid var(--holo);
+  color: var(--night); background: var(--holo);
+  box-shadow: 0 0 24px rgba(125, 243, 255, .35);
+  transition: transform .2s, box-shadow .2s;
+}
+.btn:hover { transform: translateY(-2px); box-shadow: 0 0 36px rgba(125, 243, 255, .55); }
+.btn.ghost { background: transparent; color: var(--frost); border-color: var(--line); box-shadow: none; }
+.btn.ghost:hover { border-color: var(--holo); color: var(--holo); }
+.btn.small { padding: 10px 16px; font-size: .85rem; }
+.btn[aria-disabled="true"] { opacity: .45; pointer-events: none; }
+:focus-visible { outline: 2px solid var(--holo); outline-offset: 3px; }
+
+/* ---------- hero ---------- */
+.hero { position: relative; min-height: min(92vh, 860px); display: grid; align-items: end; }
+#scene { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.hero::after { content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(to top, var(--night) 0%, rgba(7,6,18,.55) 38%, transparent 70%); }
+.hero .wrap { position: relative; z-index: 1; padding-block: 120px 72px; pointer-events: none; }
+@media (max-width: 720px) { .hero .wrap { padding-top: 300px; } }
+.hero .wrap > * { pointer-events: auto; }
+.eyebrow {
+  font: 500 .78rem/1 var(--f-mono); letter-spacing: .22em; text-transform: uppercase;
+  color: var(--holo); display: flex; align-items: center; gap: 12px;
+}
+.eyebrow::before { content: ""; width: 28px; height: 1px; background: var(--holo); }
+.wordmark {
+  font: 900 var(--step-hero)/.82 var(--f-display);
+  letter-spacing: -.02em; margin: 18px 0 8px;
+  background: linear-gradient(100deg, var(--frost) 10%, var(--holo) 40%, var(--dusk) 65%, var(--ember) 90%);
+  background-size: 220% 100%;
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  animation: sheen 9s ease-in-out infinite alternate;
+  filter: drop-shadow(0 0 30px rgba(125, 243, 255, .25));
+}
+@keyframes sheen { to { background-position: 100% 0; } }
+.tagline { font: 700 var(--step-1)/1.25 var(--f-display); max-width: 18ch; margin: 0 0 14px; text-wrap: balance; }
+.lede { color: var(--mist); max-width: 46ch; margin: 0 0 28px; }
+.cta { display: flex; flex-wrap: wrap; gap: 12px; }
+.scrollhint {
+  position: absolute; right: max(16px, env(safe-area-inset-right, 0px)); bottom: 28px;
+  font: 500 .72rem/1 var(--f-mono); letter-spacing: .2em; color: var(--mist);
+  writing-mode: vertical-rl; text-transform: uppercase;
+}
+@media (max-width: 720px) { .scrollhint { display: none; } }
+
+/* ---------- sections ---------- */
+section { padding-block: clamp(64px, 10vw, 120px); }
+h2 {
+  font: 700 var(--step-2)/1.1 var(--f-display); margin: 14px 0 18px; text-wrap: balance;
+  letter-spacing: -.01em;
+}
+p { margin: 0 0 1em; }
+.muted { color: var(--mist); }
+
+.panel {
+  background: var(--glass); border: 1px solid var(--line); border-radius: 22px;
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+}
+
+/* story */
+.story { display: grid; grid-template-columns: 1.15fr 1fr; gap: clamp(28px, 5vw, 64px); align-items: center; }
+.story > div { min-width: 0; }
+@media (max-width: 860px) { .story { grid-template-columns: 1fr; } }
+.holo-frame { position: relative; border-radius: 20px; padding: 2px; isolation: isolate; }
+.holo-frame::before {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; z-index: -1;
+  background: conic-gradient(from var(--a, 0deg), var(--holo), var(--dusk), var(--ember), var(--holo));
+  animation: spin 8s linear infinite;
+}
+@property --a { syntax: "<angle>"; initial-value: 0deg; inherits: false; }
+@keyframes spin { to { --a: 360deg; } }
+.holo-frame img { display: block; width: 100%; height: auto; border-radius: 18px; image-rendering: auto; }
+.holo-frame figcaption {
+  position: absolute; left: 14px; bottom: 12px;
+  font: 500 .7rem/1 var(--f-mono); letter-spacing: .14em; text-transform: uppercase;
+  background: rgba(7, 6, 18, .7); color: var(--frost); padding: 7px 10px; border-radius: 6px;
+}
+.cast { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 26px; }
+.cast div { padding: 16px 18px; min-width: 0; }
+.cast b { display: block; font: 700 .95rem/1.2 var(--f-display); margin-bottom: 4px; }
+.cast span { color: var(--mist); font-size: .92rem; }
+
+/* meet IAN */
+.meet { display: grid; grid-template-columns: 340px 1fr; gap: clamp(28px, 5vw, 64px); align-items: center; }
+.meet > div { min-width: 0; }
+@media (max-width: 860px) { .meet { grid-template-columns: 1fr; } .card3d { max-width: 340px; margin-inline: auto; } }
+.card3d {
+  perspective: 900px; width: 100%;
+}
+.card3d .inner {
+  position: relative; border-radius: 22px; overflow: hidden; transform-style: preserve-3d;
+  transition: transform .25s ease-out; border: 1px solid var(--line);
+  box-shadow: 0 30px 80px rgba(125, 243, 255, .12), 0 0 0 1px rgba(197, 140, 255, .15);
+}
+.card3d img { display: block; width: 100%; height: auto; }
+.card3d .shine {
+  position: absolute; inset: 0; pointer-events: none; mix-blend-mode: color-dodge; opacity: .55;
+  background:
+    radial-gradient(circle at var(--mx, 50%) var(--my, 30%), rgba(255,255,255,.55), transparent 40%),
+    linear-gradient(115deg, transparent 20%, rgba(125,243,255,.35) 40%, rgba(255,122,184,.3) 55%, rgba(197,140,255,.3) 70%, transparent 85%);
+  background-size: 100% 100%, 250% 250%;
+  background-position: center, var(--sx, 50%) var(--sy, 50%);
+}
+.card3d .tag {
+  position: absolute; top: 14px; left: 14px; transform: translateZ(40px);
+  font: 500 .7rem/1 var(--f-mono); letter-spacing: .16em; text-transform: uppercase;
+  color: var(--night); background: var(--holo); padding: 7px 10px; border-radius: 6px;
+}
+.traits { list-style: none; padding: 0; margin: 24px 0 0; display: grid; gap: 12px; }
+.traits li { display: grid; grid-template-columns: 120px 1fr; gap: 16px; padding: 14px 0; border-top: 1px solid var(--line); }
+.traits li span:first-child { font: 500 .78rem/1.6 var(--f-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--holo); }
+@media (max-width: 480px) { .traits li { grid-template-columns: 1fr; gap: 4px; } }
+
+/* token */
+.token { padding: clamp(24px, 4vw, 44px); }
+.token-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line); border-radius: 14px; overflow: hidden; margin: 26px 0; }
+@media (max-width: 720px) { .token-grid { grid-template-columns: 1fr; } }
+.token-grid div { background: var(--night-2); padding: 18px 20px; min-width: 0; }
+.label { display: block; font: 500 .72rem/1 var(--f-mono); letter-spacing: .16em; text-transform: uppercase; color: var(--mist); margin-bottom: 10px; }
+.value { font: 700 1.2rem/1.2 var(--f-display); overflow-wrap: anywhere; }
+.ca {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 12px;
+  padding: 14px 16px; border: 1px dashed var(--line); border-radius: 12px; margin-bottom: 22px;
+}
+.ca code { font: 500 .9rem/1.4 var(--f-mono); color: var(--holo); overflow-wrap: anywhere; flex: 1 1 260px; min-width: 0; }
+.copy { background: none; border: 1px solid var(--line); color: var(--frost); font: 500 .8rem/1 var(--f-mono); padding: 9px 12px; border-radius: 8px; cursor: pointer; }
+.copy:hover { border-color: var(--holo); color: var(--holo); }
+.fine { font-size: .82rem; color: var(--mist); margin: 18px 0 0; }
+
+/* community */
+.community { text-align: left; display: grid; grid-template-columns: 1fr auto; gap: 24px; align-items: end; }
+@media (max-width: 720px) { .community { grid-template-columns: 1fr; } }
+.socials { display: flex; flex-wrap: wrap; gap: 12px; }
+
+footer { border-top: 1px solid var(--line); padding-block: 32px calc(32px + env(safe-area-inset-bottom, 0px)); }
+footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 28px; justify-content: space-between; color: var(--mist); font-size: .85rem; }
+footer a { color: var(--frost); }
+
+/* gentle entrance — content is visible at rest, this only adds a lift */
+.rise { animation: rise .9s cubic-bezier(.2,.7,.2,1) both; }
+.rise.d1 { animation-delay: .1s; } .rise.d2 { animation-delay: .2s; } .rise.d3 { animation-delay: .3s; }
+@keyframes rise { from { transform: translateY(18px); opacity: .001; } }
+@media (prefers-reduced-motion: reduce) {
+  .rise, .wordmark, .holo-frame::before { animation: none; }
+  .card3d .inner { transition: none; }
+}
+</style>
+</head>
+<body>
+<div class="sky" aria-hidden="true"></div>
+<canvas class="skyline" id="skyline" aria-hidden="true"></canvas>
+
+<nav aria-label="Main">
+  <div class="wrap">
+    <a class="logo" href="#top"><i></i>IAN</a>
+    <div class="navlinks">
+      <a href="#story">Story</a>
+      <a href="#meet">Meet IAN</a>
+      <a href="#token">Token</a>
+      <a href="#community">Community</a>
+    </div>
+    <a class="btn small" data-link="buy" href="#token">Buy <span data-field="ticker">$IAN</span></a>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <canvas id="scene" aria-label="A glowing holographic cube rotating inside light rings"></canvas>
+  <div class="wrap">
+    <div class="eyebrow rise">An AI that builds beside you</div>
+    <h1 class="wordmark rise d1">IAN</h1>
+    <p class="tagline rise d2">Code with purpose. Build with vision.</p>
+    <p class="lede rise d2">IAN is a calm AI guardian with a cube of light in his hand. He stays up with the builders, keeps watch while they ship, and never gets tired of the next idea.</p>
+    <div class="cta rise d3">
+      <a class="btn" data-link="buy" href="#token">Get <span data-field="ticker">$IAN</span></a>
+      <a class="btn ghost" data-link="x" href="https://x.com/IAN_holo" target="_blank" rel="noopener">Follow @IAN_holo</a>
+    </div>
+  </div>
+  <div class="scrollhint" aria-hidden="true">Scroll</div>
+</header>
+
+<main>
+  <section id="story">
+    <div class="wrap story">
+      <figure class="holo-frame" style="margin:0">
+        <img src="assets/ian-and-cash.png" width="506" height="340" alt="A builder typing code at night beside IAN, a white-haired AI holding a glowing blue cube, with the city lit up behind them">
+        <figcaption>2:14 AM · still building</figcaption>
+      </figure>
+      <div>
+        <div class="eyebrow">The story</div>
+        <h2>Every builder needs someone on watch.</h2>
+        <p>Late nights, too many tabs, one more bug. IAN was made for that moment. He sits next to the builder, holds the light steady, and keeps the world quiet long enough for the work to get done.</p>
+        <p class="muted">The cube in his hand is the idea you're working on. He keeps it glowing until you're ready to ship it.</p>
+        <div class="cast">
+          <div class="panel"><b>The builder</b><span>Writes the code, pushes the limits, shapes what's next.</span></div>
+          <div class="panel"><b>IAN</b><span>The AI guardian. Calm, watchful, always building.</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="meet">
+    <div class="wrap meet">
+      <div class="card3d" id="card">
+        <div class="inner">
+          <img src="assets/ian.png" width="251" height="306" alt="IAN sitting peacefully on a sheet of ice, eyes closed, surrounded by sleeping penguins">
+          <div class="shine"></div>
+          <span class="tag">IAN · Guardian</span>
+        </div>
+      </div>
+      <div>
+        <div class="eyebrow">Meet IAN</div>
+        <h2>Somewhere quiet. Somewhere soft.</h2>
+        <p>When the building stops, IAN goes somewhere still and lets the world slow down for a while. The guardian watches, gently, always near.</p>
+        <ul class="traits">
+          <li><span>Nature</span><span>Artificial intelligence with a quiet heart</span></li>
+          <li><span>Signature</span><span>A holographic cube of light that never goes out</span></li>
+          <li><span>Role</span><span>Guardian of builders and the community</span></li>
+          <li><span>Motto</span><span>Engineering intelligence for impact</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="token">
+    <div class="wrap">
+      <div class="panel token">
+        <div class="eyebrow">Token</div>
+        <h2><span data-field="ticker">$IAN</span></h2>
+        <div class="token-grid">
+          <div><span class="label">Ticker</span><span class="value" data-field="ticker">$IAN</span></div>
+          <div><span class="label">Chain</span><span class="value" data-field="chain">TBA</span></div>
+          <div><span class="label">Community</span><span class="value">@IAN_holo</span></div>
+        </div>
+        <span class="label">Contract address</span>
+        <div class="ca">
+          <code id="ca" data-field="contract">Contract address coming soon</code>
+          <button class="copy" id="copyCa" type="button">Copy</button>
+        </div>
+        <div class="cta">
+          <a class="btn" data-link="buy" href="#token">Buy <span data-field="ticker">$IAN</span></a>
+          <a class="btn ghost" data-link="chart" href="#token">View chart</a>
+        </div>
+        <p class="fine">Always check the contract address against @IAN_holo before buying. Crypto is risky and nothing on this site is financial advice.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="community">
+    <div class="wrap community">
+      <div>
+        <div class="eyebrow">Community</div>
+        <h2>Build with us.</h2>
+        <p class="muted" style="max-width:46ch">The cube stays lit because the community keeps building. Come say hi.</p>
+      </div>
+      <div class="socials">
+        <a class="btn" data-link="x" href="https://x.com/IAN_holo" target="_blank" rel="noopener">X / Twitter</a>
+        <a class="btn ghost" data-link="telegram" href="#community" target="_blank" rel="noopener">Telegram</a>
+        <a class="btn ghost" data-link="discord" href="#community" target="_blank" rel="noopener">Discord</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>© <span id="yr">2026</span> IAN · Code with purpose. Build with vision.</span>
+    <span>Site by <a href="https://x.com/cashhhlii" target="_blank" rel="noopener">@cashhhlii</a></span>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// ======================================================================
+//  Edit this block. Empty strings hide or disable the matching buttons.
+// ======================================================================
+const IAN = {
+  ticker:   "$IAN",
+  chain:    "",          // e.g. "Solana"
+  contract: "",          // paste the token's contract address
+  links: {
+    x:        "https://x.com/IAN_holo",
+    buy:      "",        // e.g. a jup.ag / pump.fun / uniswap link
+    chart:    "",        // e.g. a dexscreener link
+    telegram: "",
+    discord:  ""
+  }
+};
+
+// ---------- fill config into the page ----------
+(function applyConfig() {
+  document.querySelectorAll('[data-field="ticker"]').forEach(el => el.textContent = IAN.ticker);
+  if (IAN.chain) document.querySelectorAll('[data-field="chain"]').forEach(el => el.textContent = IAN.chain);
+  if (IAN.contract) document.getElementById("ca").textContent = IAN.contract;
+
+  document.querySelectorAll("[data-link]").forEach(a => {
+    const url = IAN.links[a.dataset.link];
+    if (url) {
+      a.href = url; a.target = "_blank"; a.rel = "noopener";
+    } else if (a.dataset.link === "telegram" || a.dataset.link === "discord") {
+      a.hidden = true;                                   // no link yet: hide it
+    } else if (a.dataset.link === "buy" || a.dataset.link === "chart") {
+      a.setAttribute("aria-disabled", "true");           // shows, greyed out, until there's a link
+      a.title = "Coming soon";
+    }
+  });
+
+  const btn = document.getElementById("copyCa");
+  if (!IAN.contract) btn.hidden = true;
+  btn.addEventListener("click", () => {
+    const done = () => { btn.textContent = "Copied"; setTimeout(() => btn.textContent = "Copy", 1600); };
+    const fallback = () => {
+      const r = document.createRange(); r.selectNodeContents(document.getElementById("ca"));
+      const s = getSelection(); s.removeAllRanges(); s.addRange(r); btn.textContent = "Selected";
+    };
+    if (navigator.clipboard) navigator.clipboard.writeText(IAN.contract).then(done, fallback);
+    else fallback();
+  });
+  document.getElementById("yr").textContent = new Date().getFullYear();
+})();
+
+const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+// ---------- holographic tilt on IAN's card ----------
+(function tiltCard() {
+  const card = document.getElementById("card");
+  const inner = card.querySelector(".inner");
+  if (reduceMotion) return;
+  card.addEventListener("pointermove", e => {
+    const r = card.getBoundingClientRect();
+    const x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
+    inner.style.transform = `rotateY(${(x - .5) * 18}deg) rotateX(${(.5 - y) * 18}deg)`;
+    inner.style.setProperty("--mx", x * 100 + "%"); inner.style.setProperty("--my", y * 100 + "%");
+    inner.style.setProperty("--sx", x * 100 + "%"); inner.style.setProperty("--sy", y * 100 + "%");
+  });
+  card.addEventListener("pointerleave", () => { inner.style.transform = ""; });
+})();
+
+// ---------- background skyline (2D, cheap) ----------
+(function skyline() {
+  const c = document.getElementById("skyline"), g = c.getContext("2d");
+  function draw() {
+    const dpr = Math.min(devicePixelRatio || 1, 2);
+    c.width = innerWidth * dpr; c.height = innerHeight * .38 * dpr;
+    g.scale(dpr, dpr);
+    const W = innerWidth, H = innerHeight * .38;
+    let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+    for (let layer = 0; layer < 2; layer++) {
+      let x = 0;
+      while (x < W) {
+        const w = 24 + rnd() * 60, h = H * (layer ? .35 + rnd() * .6 : .2 + rnd() * .4);
+        g.fillStyle = layer ? "#0d0a1f" : "#16112e";
+        g.fillRect(x, H - h, w - 3, h);
+        for (let wy = H - h + 8; wy < H - 6; wy += 9) for (let wx = x + 5; wx < x + w - 8; wx += 8) {
+          if (rnd() < .22) { g.fillStyle = ["#ff7ab8", "#c58cff", "#7df3ff", "#ffd38a"][(rnd() * 4) | 0]; g.globalAlpha = .35 + rnd() * .5; g.fillRect(wx, wy, 3, 4); g.globalAlpha = 1; }
+        }
+        x += w;
+      }
+    }
+  }
+  draw(); addEventListener("resize", draw);
+})();
+
+// ---------- the 3D scene: IAN's holographic cube ----------
+(function scene() {
+  if (!window.THREE) return;                          // CDN blocked: the page still works without 3D
+  const canvas = document.getElementById("scene");
+  let renderer;
+  try { renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true }); }
+  catch (e) { return; }
+  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
+
+  const scene = new THREE.Scene();
+  scene.fog = new THREE.FogExp2(0x070612, 0.045);
+  const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 100);
+  camera.position.set(0, 0.2, 9);
+
+  const CYAN = 0x7df3ff, VIOLET = 0xc58cff, PINK = 0xff7ab8;
+  const rig = new THREE.Group();                      // everything that follows the mouse
+  scene.add(rig);
+
+  // holographic fresnel shader: glows at the edges like the cube in the art
+  const holoMat = (color, power = 2.2, alpha = .9) => new THREE.ShaderMaterial({
+    transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
+    uniforms: { uColor: { value: new THREE.Color(color) }, uTime: { value: 0 }, uPow: { value: power }, uA: { value: alpha } },
+    vertexShader: `
+      varying vec3 vN; varying vec3 vV; varying vec3 vP;
+      void main(){
+        vec4 mv = modelViewMatrix * vec4(position,1.0);
+        vN = normalize(normalMatrix * normal); vV = normalize(-mv.xyz); vP = position;
+        gl_Position = projectionMatrix * mv;
+      }`,
+    fragmentShader: `
+      uniform vec3 uColor; uniform float uTime; uniform float uPow; uniform float uA;
+      varying vec3 vN; varying vec3 vV; varying vec3 vP;
+      void main(){
+        float f = pow(1.0 - abs(dot(vN, vV)), uPow);
+        float scan = 0.55 + 0.45 * sin(vP.y * 18.0 - uTime * 2.4);
+        gl_FragColor = vec4(uColor * (0.25 + f * 1.6) * scan, (0.08 + f) * uA);
+      }`
+  });
+
+  // the tesseract-style cube: outer cube, inner cube, edges joining their corners
+  const cube = new THREE.Group(); rig.add(cube);
+  const outerGeo = new THREE.BoxGeometry(2.4, 2.4, 2.4);
+  const innerGeo = new THREE.BoxGeometry(1.15, 1.15, 1.15);
+  const outerMat = holoMat(CYAN, 2.4, .75), innerMat = holoMat(VIOLET, 1.6, 1);
+  cube.add(new THREE.Mesh(outerGeo, outerMat));
+  const innerMesh = new THREE.Mesh(innerGeo, innerMat); cube.add(innerMesh);
+
+  const lineMat = new THREE.LineBasicMaterial({ color: CYAN, transparent: true, opacity: .95, blending: THREE.AdditiveBlending });
+  cube.add(new THREE.LineSegments(new THREE.EdgesGeometry(outerGeo), lineMat));
+  const innerEdges = new THREE.LineSegments(new THREE.EdgesGeometry(innerGeo), new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: .9 }));
+  cube.add(innerEdges);
+  const corners = [];
+  for (const x of [-1, 1]) for (const y of [-1, 1]) for (const z of [-1, 1]) {
+    corners.push(x * 1.2, y * 1.2, z * 1.2, x * .575, y * .575, z * .575);
+  }
+  const joinGeo = new THREE.BufferGeometry();
+  joinGeo.setAttribute("position", new THREE.Float32BufferAttribute(corners, 3));
+  cube.add(new THREE.LineSegments(joinGeo, new THREE.LineBasicMaterial({ color: CYAN, transparent: true, opacity: .45, blending: THREE.AdditiveBlending })));
+
+  // soft glow behind the cube
+  const glowTex = (() => {
+    const c = document.createElement("canvas"); c.width = c.height = 128;
+    const g = c.getContext("2d"), grd = g.createRadialGradient(64, 64, 0, 64, 64, 64);
+    grd.addColorStop(0, "rgba(125,243,255,.9)"); grd.addColorStop(.35, "rgba(125,243,255,.25)"); grd.addColorStop(1, "rgba(125,243,255,0)");
+    g.fillStyle = grd; g.fillRect(0, 0, 128, 128);
+    return new THREE.CanvasTexture(c);
+  })();
+  const glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: .8 }));
+  glow.scale.set(7, 7, 1); rig.add(glow);
+
+  // orbit rings
+  const rings = [];
+  [[3.2, CYAN, 1.2], [3.9, VIOLET, -0.8], [4.6, PINK, 0.5]].forEach(([r, col, tilt], i) => {
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(r, .012, 8, 180),
+      new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: .55, blending: THREE.AdditiveBlending }));
+    ring.rotation.x = Math.PI / 2 + tilt * .35; ring.rotation.y = tilt * .4;
+    // a bright node riding each ring
+    const node = new THREE.Mesh(new THREE.SphereGeometry(.06, 12, 12), new THREE.MeshBasicMaterial({ color: col }));
+    node.position.x = r; ring.add(node);
+    rig.add(ring); rings.push({ ring, speed: (i % 2 ? -1 : 1) * (.12 + i * .05) });
+  });
+
+  // floating mini cubes (shards of the idea)
+  const shards = [];
+  for (let i = 0; i < 26; i++) {
+    const s = .08 + Math.random() * .22;
+    const g = new THREE.BoxGeometry(s, s, s);
+    const m = new THREE.LineSegments(new THREE.EdgesGeometry(g),
+      new THREE.LineBasicMaterial({ color: [CYAN, VIOLET, PINK][i % 3], transparent: true, opacity: .7, blending: THREE.AdditiveBlending }));
+    const a = Math.random() * Math.PI * 2, rr = 3 + Math.random() * 4.5;
+    m.position.set(Math.cos(a) * rr, (Math.random() - .5) * 5, Math.sin(a) * rr - 1);
+    m.userData = { spin: (Math.random() - .5) * .02, bob: Math.random() * Math.PI * 2 };
+    rig.add(m); shards.push(m);
+  }
+
+  // drifting particles, colored like city lights
+  const N = 900, pos = new Float32Array(N * 3), col = new Float32Array(N * 3);
+  const palette = [new THREE.Color(CYAN), new THREE.Color(VIOLET), new THREE.Color(PINK), new THREE.Color(0xffffff)];
+  for (let i = 0; i < N; i++) {
+    pos[i * 3] = (Math.random() - .5) * 30; pos[i * 3 + 1] = (Math.random() - .5) * 18; pos[i * 3 + 2] = (Math.random() - .5) * 20 - 4;
+    const c = palette[(Math.random() * palette.length) | 0]; col[i * 3] = c.r; col[i * 3 + 1] = c.g; col[i * 3 + 2] = c.b;
+  }
+  const pGeo = new THREE.BufferGeometry();
+  pGeo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+  pGeo.setAttribute("color", new THREE.BufferAttribute(col, 3));
+  const points = new THREE.Points(pGeo, new THREE.PointsMaterial({ size: .045, vertexColors: true, transparent: true, opacity: .8, depthWrite: false, blending: THREE.AdditiveBlending }));
+  scene.add(points);
+
+  // grid floor, like a holo table
+  const grid = new THREE.GridHelper(40, 40, VIOLET, 0x2a2150);
+  grid.position.y = -3.4; grid.material.transparent = true; grid.material.opacity = .35;
+  scene.add(grid);
+
+  // place the cube to the right on wide screens so the headline has room
+  function resize() {
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h; camera.updateProjectionMatrix();
+    rig.position.x = w > 900 ? 2.6 : 0;
+    rig.position.y = w > 900 ? 0.4 : 2.1;
+    rig.scale.setScalar(w > 900 ? 1 : .62);
+  }
+  resize(); addEventListener("resize", resize);
+
+  let mx = 0, my = 0, tx = 0, ty = 0;
+  addEventListener("pointermove", e => { tx = (e.clientX / innerWidth - .5); ty = (e.clientY / innerHeight - .5); });
+
+  // only render while the hero is on screen
+  let visible = true;
+  new IntersectionObserver(([e]) => { visible = e.isIntersecting; }).observe(canvas);
+
+  const clock = new THREE.Clock();
+  function frame() {
+    requestAnimationFrame(frame);
+    if (!visible) return;
+    const t = clock.getElapsedTime(), k = reduceMotion ? 0.15 : 1;
+    mx += (tx - mx) * .05; my += (ty - my) * .05;
+
+    cube.rotation.x = t * .25 * k + my * .6;
+    cube.rotation.y = t * .35 * k + mx * .8;
+    innerMesh.rotation.y = innerEdges.rotation.y = -t * .6 * k;
+    innerMesh.rotation.x = innerEdges.rotation.x = t * .3 * k;
+    cube.position.y = Math.sin(t * .9) * .12 * k;
+    glow.material.opacity = .65 + Math.sin(t * 1.6) * .15 * k;
+
+    rings.forEach(({ ring, speed }) => { ring.rotation.z += speed * .01 * k; });
+    shards.forEach(s => { s.rotation.x += s.userData.spin * k; s.rotation.y += s.userData.spin * k; s.position.y += Math.sin(t + s.userData.bob) * .002 * k; });
+    points.rotation.y = t * .015 * k;
+    grid.position.z = (t * .6 * k) % 1;
+
+    rig.rotation.y = mx * .35; rig.rotation.x = my * .15;
+    outerMat.uniforms.uTime.value = innerMat.uniforms.uTime.value = t;
+
+    renderer.render(scene, camera);
+  }
+  frame();
+})();
+</script>
+</body>
+</html>
