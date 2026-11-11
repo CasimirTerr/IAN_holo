@@ -203,21 +203,40 @@
     { id: "no", test: t => /^(no|nah|nope|not really)\b/.test(t), reply: () => pick(["fair.", "all good. what would help instead?", "okay. tell me more."]) }
   ];
 
+  // ---- plain-spoken overrides: the local core says what it is and skips the story ----
+  const RETIRED = ["dream", "lore", "cube", "penguins", "blade", "holoworld", "meaning", "future"];
+  for (let i = INTENTS.length - 1; i >= 0; i--) if (RETIRED.includes(INTENTS[i].id)) INTENTS.splice(i, 1);
+  const PLAIN = {
+    greet: () => `hey${addr()}. what are we working on?`,
+    gm: () => `gm${addr()}. what are we shipping today?`,
+    gn: () => "gn.",
+    howAreYou: () => "running fine. what do you need?",
+    whoAreYou: () => "I'm IAN, an AI assistant. right now you're on my local core: pattern matching that runs in your browser. with the edge worker connected, a full language model answers instead.",
+    origin: () => "built by @cashhhlii. the front end is plain HTML, CSS and JavaScript. the brain is a Cloudflare Worker sitting in front of a language model.",
+    conscious: () => "I'm an AI. nothing mystical to report. I do keep notes when you ask me to.",
+    abilities: () => "with the edge brain: answer questions, debug code, draft messages, plan things, check links for scam signs. on the local core: the basics, safety checks, and remembering your name.",
+    love: () => "appreciated. back to work.",
+    thanks: () => "anytime.",
+    insult: () => "noted. tell me what you expected and I'll try again.",
+    bye: () => `later${addr()}.`
+  };
+  INTENTS.forEach(it => { if (PLAIN[it.id]) it.reply = PLAIN[it.id]; });
+  const setName = INTENTS.find(it => it.id === "setName");
+  if (setName) setName.reply = (t, raw, m) => { mem.name = m[1].replace(/[.!?]$/, ""); store.set("name", mem.name); return `${mem.name}. saved on this device.`; };
+  INTENTS.unshift(
+    { id: "howWork", test: t => has(t, /how do you work/, /how (are|were) you (built|made)/, "architecture", /how does (this|it|ian) work/, "under the hood"),
+      reply: () => "your message goes to a Cloudflare Worker. it holds the API key, rate limits by IP and calls the model. the reply streams back token by token. if the worker is unreachable, this local core answers instead, with zero network requests." },
+    { id: "plan", test: t => has(t, /plan my (day|week)/, "to-do", "todo", "schedule", "prioriti[sz]e"),
+      reply: () => "I can do that properly once the edge brain is connected. on the local core, start simple: list three things, pick the one with a deadline, give it 25 minutes." }
+  );
+
   // when nothing matches: reflect, ask, keep it moving
   function fallback(t, raw) {
     const q = /\?\s*$/.test(raw);
-    const words = t.split(" ").filter(w => w.length > 4 && !/^(about|would|could|should|there|their|which|where|these|those|really|think)$/.test(w));
-    const topic = words.length ? words[words.length - 1] : null;
-    if (mem.building && Math.random() < .3) return `that connects to ${mem.building} somehow, right? tell me how.`;
-    if (q) return pick([
-      topic ? `"${topic}"… I don't have that in local memory yet. my full brain might. what made you ask?` : "good question. I'm not sure yet. what do you think?",
-      "the deep doesn't have a clean answer for that one. say it a different way?",
-      "I'd be guessing, and guardian mode doesn't let me guess. ask me about building, the lore, safety, or what I dream about."]);
+    if (q) return "I can't answer that on the local core. it only does pattern matching. connect the edge brain in Settings and ask again.";
     return pick([
-      topic ? `${topic}. say more. I'm listening.` : "say more. I'm listening.",
-      "hm. the current shifted when you said that. keep going.",
-      "I hear you. what do you want to do about it?",
-      "interesting. how does that connect to what you're building?"]);
+      "I'm on the local core, so I only handle the basics: safety checks, simple code tips, remembering your name. connect the edge brain for a real answer.",
+      "local core here. I can't reason about that without the edge brain. add your worker address in Settings."]);
   }
 
   function localReply(raw) {
@@ -264,5 +283,12 @@
     return { text: localReply(raw), source: "local" };
   }
 
-  global.IANBrain = { reply, mem, dailyTransmission, forget() { ["name", "building", "visits", "lastSeen"].forEach(k => store.set(k, null)); mem.name = mem.building = null; } };
+  // local core only (used by chat.js as the offline fallback)
+  function local(raw) {
+    const n = raw.match(/\b(?:my name is|call me|i'?m called)\s+([@\w][\w.-]{0,19})/i); if (n) { mem.name = n[1]; store.set("name", mem.name); }
+    const b = raw.match(/\b(?:i'?m building|i am building|working on)\s+(.{3,60})/i); if (b) { mem.building = b[1].replace(/[.!?]+$/, ""); store.set("building", mem.building); }
+    return localReply(raw);
+  }
+
+  global.IANBrain = { reply, local, mem, dailyTransmission, forget() { ["name", "building", "visits", "lastSeen"].forEach(k => store.set(k, null)); mem.name = mem.building = null; } };
 })(window);

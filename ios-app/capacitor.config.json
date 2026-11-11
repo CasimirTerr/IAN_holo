@@ -1,0 +1,10 @@
+{
+  "appId": "com.casimirterr.ian",
+  "appName": "IAN",
+  "webDir": "www",
+  "backgroundColor": "#030b17",
+  "ios": {
+    "contentInset": "never",
+    "backgroundColor": "#030b17"
+  }
+}

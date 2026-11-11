@@ -1,0 +1,16 @@
+{
+  "name": "IAN",
+  "short_name": "IAN",
+  "description": "IAN, a personal AI. Streams answers, remembers what you tell it, works offline.",
+  "start_url": "app/index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#030b17",
+  "theme_color": "#030b17",
+  "icons": [
+    { "src": "assets/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "assets/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "assets/icon-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

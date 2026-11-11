@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<title>IAN</title>
+<meta name="description" content="IAN, a personal AI. Streams answers, remembers what you tell it, works offline.">
+<meta name="theme-color" content="#030b17">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="IAN">
+<link rel="manifest" href="../manifest.webmanifest">
+<link rel="apple-touch-icon" href="../assets/icon-180.png">
+<link rel="icon" href="../assets/icon-192.png">
+<link rel="stylesheet" href="../base.css">
+<style>
+html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
+body { -webkit-tap-highlight-color: transparent; }
+.app { height: 100dvh; display: flex; flex-direction: column; max-width: 860px; margin: 0 auto; padding: env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe-area-inset-left); }
+
+/* header */
+.bar { display: flex; align-items: center; gap: 12px; margin: 10px 12px 0; padding: 8px 10px 8px 8px; border-radius: 999px; }
+.who { display: flex; align-items: center; gap: 12px; min-width: 0; flex: 1; }
+.avatar { position: relative; width: 44px; height: 44px; flex: none; }
+.avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block; }
+.avatar::after { content: ""; position: absolute; inset: -4px; border-radius: 50%; border: 1.5px solid var(--signal); opacity: calc(.25 + var(--talk, 0) * .75); transform: scale(calc(1 + var(--talk, 0) * .12)); box-shadow: 0 0 calc(var(--talk, 0) * 22px) var(--signal); transition: opacity .12s, transform .12s; }
+.who b { display: block; font: 800 17px/1.1 var(--f); font-stretch: 118%; letter-spacing: .02em; }
+.who span { display: flex; align-items: center; gap: 7px; font: 500 12px/1.3 var(--mono); color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dot { width: 7px; height: 7px; border-radius: 50%; background: var(--faint); flex: none; }
+[data-status="edge"] .dot { background: var(--signal); box-shadow: 0 0 10px var(--signal); }
+[data-status="private"] .dot { background: #8dffb5; box-shadow: 0 0 10px #8dffb5; }
+.icon { width: 44px; height: 44px; border-radius: 50%; border: 0; background: transparent; display: grid; place-items: center; cursor: pointer; flex: none; }
+.icon:hover { background: rgba(190, 225, 255, .12); }
+.icon svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+/* conversation */
+.stage { flex: 1; min-height: 0; display: flex; flex-direction: column; position: relative; }
+#chat { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.hello { display: none; position: absolute; inset: 0; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 0 22px 10px; gap: 6px; }
+.ic-empty ~ .hello, .stage.is-empty .hello { display: flex; }
+.hello img { height: min(34dvh, 300px); width: auto; filter: drop-shadow(0 0 34px rgba(92, 200, 255, .45)); animation: bob 7s ease-in-out infinite; }
+@keyframes bob { 50% { transform: translateY(-12px); } }
+.hello h1 { margin: 6px 0 0; font: 800 clamp(26px, 6.4vw, 38px)/1.08 var(--f); font-stretch: 112%; letter-spacing: -.01em; text-wrap: balance; }
+.hello p { margin: 0 0 12px; color: var(--dim); max-width: 34ch; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; max-width: 520px; }
+.chip { min-height: 42px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--line); background: rgba(190, 225, 255, .07); cursor: pointer; font-size: 15px; -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
+.chip:hover { background: rgba(190, 225, 255, .16); }
+
+/* composer */
+.composer { margin: 6px 12px calc(10px + env(safe-area-inset-bottom)); padding: 6px; border-radius: 28px; display: flex; align-items: flex-end; gap: 4px; }
+.composer textarea { flex: 1; min-width: 0; resize: none; border: 0; background: transparent; outline: 0; padding: 11px 6px 11px 14px; max-height: 148px; font-size: 17px; line-height: 1.4; }
+.composer textarea::placeholder { color: var(--faint); }
+.send { background: var(--ice); color: #04121f; }
+.send:hover { background: #fff; }
+.send[disabled] { opacity: .35; }
+.mic.on { background: var(--ember); color: #fff; }
+.install { margin: 8px 12px 0; padding: 10px 12px 10px 16px; border-radius: 16px; display: none; align-items: center; gap: 10px; font-size: 14px; color: var(--dim); }
+.install.show { display: flex; } .install b { color: var(--text); }
+
+/* settings sheet */
+.scrim { position: fixed; inset: 0; background: rgba(1, 6, 14, .55); opacity: 0; pointer-events: none; transition: opacity .25s; z-index: 5; }
+.sheet { position: fixed; z-index: 6; left: 50%; bottom: 0; width: min(100%, 560px); max-height: 88dvh; overflow-y: auto; transform: translate(-50%, 104%); transition: transform .32s cubic-bezier(.2, .8, .2, 1); border-radius: 28px 28px 0 0; padding: 10px 20px calc(24px + env(safe-area-inset-bottom)); background: linear-gradient(170deg, rgba(20, 52, 92, .92), rgba(6, 22, 44, .96)); }
+.open .scrim { opacity: 1; pointer-events: auto; } .open .sheet { transform: translate(-50%, 0); }
+.grab { width: 40px; height: 4px; border-radius: 4px; background: var(--line); margin: 2px auto 12px; }
+.sheet h2 { font: 800 22px/1.2 var(--f); font-stretch: 112%; margin: 0 0 4px; }
+.sheet h3 { font: 700 15px/1.3 var(--f); margin: 22px 0 8px; }
+.sheet p { margin: 0 0 10px; font-size: 14px; color: var(--dim); }
+.field { display: flex; gap: 8px; }
+.field input { flex: 1; min-width: 0; min-height: 46px; padding: 0 14px; border-radius: 14px; border: 1px solid var(--line); background: rgba(3, 11, 23, .5); font-size: 16px; }
+.field .btn { min-height: 46px; padding: 0 16px; border-radius: 14px; }
+.row { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 46px; }
+.switch { appearance: none; width: 50px; height: 30px; border-radius: 30px; background: rgba(200, 232, 255, .18); position: relative; cursor: pointer; transition: background .2s; flex: none; }
+.switch::after { content: ""; position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; border-radius: 50%; background: #fff; transition: transform .2s; }
+.switch:checked { background: var(--signal); } .switch:checked::after { transform: translateX(20px); }
+.list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.list li { display: flex; align-items: center; gap: 8px; padding: 8px 6px 8px 14px; border-radius: 12px; background: rgba(190, 225, 255, .06); font-size: 14.5px; }
+.list li span, .list li button.t { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; background: none; border: 0; cursor: pointer; padding: 6px 0; }
+.list .x { width: 34px; height: 34px; border-radius: 50%; border: 0; background: transparent; cursor: pointer; color: var(--dim); flex: none; }
+.list .x:hover { background: rgba(255, 90, 60, .2); color: #fff; }
+.empty { font-size: 14px; color: var(--faint); }
+.msg { font: 500 13px/1.4 var(--mono); min-height: 1.4em; margin-top: 8px; color: var(--signal); }
+.msg.bad { color: var(--ember); }
+.danger { color: #ffb4a6; border-color: rgba(255, 90, 60, .4); }
+@media (min-width: 700px) { .ic-log { padding-left: 24px; padding-right: 24px; } }
+</style>
+</head>
+<body>
+<canvas id="bg" aria-hidden="true"></canvas>
+
+<div class="app" id="app" data-status="local">
+  <header class="bar glass">
+    <div class="who">
+      <div class="avatar" id="avatar"><img src="../assets/ian-face.jpg" alt=""></div>
+      <div style="min-width:0">
+        <b>IAN</b>
+        <span><i class="dot"></i><em id="status" style="font-style:normal">Local core</em></span>
+      </div>
+    </div>
+    <button class="icon" id="new" aria-label="Start a new chat"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+    <button class="icon" id="menu" aria-label="Open settings"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h10"/></svg></button>
+  </header>
+
+  <div class="install glass" id="install">
+    <span><b>Install IAN:</b> tap Share, then “Add to Home Screen”.</span>
+    <button class="icon" id="install-x" aria-label="Dismiss" style="width:36px;height:36px"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  </div>
+
+  <main class="stage">
+    <div id="chat"></div>
+    <div class="hello" id="hello">
+      <img src="../assets/ian-float.webp" alt="IAN, a white-haired figure floating with his eyes closed">
+      <h1 id="greet">What are we working on?</h1>
+      <p>Ask anything. I answer in real time and keep working when you're offline.</p>
+      <div class="chips">
+        <button class="chip">Plan my day with me</button>
+        <button class="chip">Help me debug something</button>
+        <button class="chip">Is this link a scam?</button>
+        <button class="chip">How do you work?</button>
+      </div>
+    </div>
+  </main>
+
+  <form class="composer glass" id="form">
+    <textarea id="input" rows="1" placeholder="Message IAN" aria-label="Message IAN" autocomplete="off" enterkeyhint="send"></textarea>
+    <button type="button" class="icon mic" id="mic" aria-label="Dictate a message" hidden><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
+    <button type="submit" class="icon send" id="send" aria-label="Send message" disabled><svg viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></svg></button>
+  </form>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<aside class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title" inert>
+  <div class="grab"></div>
+  <h2 id="sheet-title">Settings</h2>
+
+  <h3>Your name</h3>
+  <div class="field"><input id="s-name" placeholder="What IAN calls you" maxlength="40" autocomplete="given-name"><button class="btn" id="s-name-save">Save</button></div>
+
+  <h3>Private mode</h3>
+  <p>Enter your passcode to switch IAN from the public character to your personal assistant: longer answers, a stronger model, and memory. The passcode is checked on the worker and kept on this device.</p>
+  <div class="field"><input id="s-pass" type="password" placeholder="Passcode" autocomplete="off"><button class="btn" id="s-pass-save">Unlock</button></div>
+  <div class="msg" id="s-pass-msg" role="status"></div>
+
+  <div class="row"><span>Read replies out loud</span><input type="checkbox" class="switch" id="s-voice" aria-label="Read replies out loud"></div>
+
+  <h3>What IAN remembers</h3>
+  <p>Saved on this device only. Sent to the worker in private mode so IAN can use it.</p>
+  <ul class="list" id="s-notes"></ul>
+  <div class="field" style="margin-top:8px"><input id="s-note" placeholder="Add something to remember" maxlength="200"><button class="btn" id="s-note-add">Add</button></div>
+
+  <h3>Earlier chats</h3>
+  <ul class="list" id="s-chats"></ul>
+
+  <h3>Brain</h3>
+  <p>The address of your Cloudflare Worker. Leave empty to run on the local core only.</p>
+  <div class="field"><input id="s-brain" type="url" placeholder="https://ian-brain.you.workers.dev" autocomplete="off" autocapitalize="off" spellcheck="false"><button class="btn" id="s-brain-save">Save</button></div>
+  <div class="msg" id="s-brain-msg" role="status"></div>
+
+  <div class="row" style="margin-top:18px"><button class="btn danger" id="s-wipe">Delete all chats and memory</button><button class="btn" id="s-close">Done</button></div>
+</aside>
+
+<script src="../config.js"></script>
+<script src="../brain.js"></script>
+<script src="../chat.js"></script>
+<script src="../bg.js"></script>
+<script>
+(function () {
+  "use strict";
+  const $ = id => document.getElementById(id);
+  const S = IANChat.settings;
+  const app = $("app"), input = $("input"), sendBtn = $("send"), stage = document.querySelector(".stage");
+  const chat = IANChat.create({ root: $("chat") });
+
+  // ----- status + presence
+  const LABEL = { local: "Local core", edge: "Edge brain · live", private: "Private mode" };
+  chat.on("status", s => { app.dataset.status = s; $("status").textContent = LABEL[s]; });
+  let talk = 0;
+  chat.on("talk", v => { talk = Math.max(talk, v); if (window.IANBg) IANBg.talk(v); });
+  (function pulse() { talk *= .9; $("avatar").style.setProperty("--talk", talk.toFixed(3)); requestAnimationFrame(pulse); })();
+  chat.on("change", c => { stage.classList.toggle("is-empty", c.msgs.length === 0); });
+  function greet() { $("greet").textContent = S.name ? `${S.name}, what are we working on?` : "What are we working on?"; }
+  greet();
+
+  // ----- composer
+  const touch = matchMedia("(pointer: coarse)").matches;
+  function fit() { input.style.height = "auto"; input.style.height = Math.min(input.scrollHeight, 148) + "px"; sendBtn.disabled = !input.value.trim(); }
+  function submit() { const v = input.value; if (!v.trim() || chat.busy) return; input.value = ""; fit(); chat.send(v).then(greet); }
+  input.addEventListener("input", fit);
+  input.addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey && !touch && !e.isComposing) { e.preventDefault(); submit(); } });
+  $("form").addEventListener("submit", e => { e.preventDefault(); submit(); });
+  document.querySelectorAll(".chip").forEach(c => c.addEventListener("click", () => chat.send(c.textContent)));
+  $("new").addEventListener("click", () => { chat.newChat(); input.focus(); });
+
+  // ----- dictation (only where the browser supports it)
+  if (IANChat.voice.canListen) {
+    const mic = $("mic"); mic.hidden = false; let rec = null;
+    mic.addEventListener("click", () => {
+      if (rec) { rec.stop(); return; }
+      rec = IANChat.voice.listen((text, final) => { input.value = text; fit(); if (final) submit(); }, on => { mic.classList.toggle("on", on); if (!on) rec = null; });
+    });
+  }
+
+  // ----- settings sheet
+  const sheet = $("sheet");
+  function li(text, onOpen, onDelete, label) {
+    const row = document.createElement("li");
+    const main = document.createElement(onOpen ? "button" : "span"); main.textContent = text; if (onOpen) { main.className = "t"; main.addEventListener("click", onOpen); }
+    const x = document.createElement("button"); x.className = "x"; x.textContent = "✕"; x.setAttribute("aria-label", label); x.addEventListener("click", onDelete);
+    row.append(main, x); return row;
+  }
+  function empty(text) { const e = document.createElement("li"); e.className = "empty"; e.style.background = "none"; e.style.padding = "0"; e.textContent = text; return e; }
+  function drawLists() {
+    const notes = $("s-notes"); notes.textContent = "";
+    const all = S.notes;
+    if (!all.length) notes.append(empty("Nothing yet. In private mode IAN saves things you ask him to remember."));
+    all.forEach((n, i) => notes.append(li(n, null, () => { const a = S.notes; a.splice(i, 1); S.notes = a; drawLists(); }, "Forget: " + n)));
+    const cl = $("s-chats"); cl.textContent = "";
+    const list = IANChat.chats.all();
+    if (!list.length) cl.append(empty("No saved chats yet."));
+    list.forEach(c => cl.append(li(c.title || "Untitled chat", () => { chat.open(c.id); closeSheet(); }, () => { IANChat.chats.remove(c.id); if (chat.chat.id === c.id) chat.newChat(); drawLists(); }, "Delete chat: " + (c.title || "untitled"))));
+  }
+  function openSheet() {
+    $("s-name").value = S.name; $("s-brain").value = S.brain; $("s-voice").checked = S.voice; $("s-pass").value = "";
+    say("s-pass-msg", S.passcode ? "Private mode is unlocked on this device." : "");
+    say("s-brain-msg", "");
+    $("s-pass-save").textContent = S.passcode ? "Lock" : "Unlock";
+    drawLists(); sheet.inert = false; document.body.classList.add("open"); $("s-close").focus({ preventScroll: true });
+  }
+  function closeSheet() { document.body.classList.remove("open"); sheet.inert = true; $("menu").focus({ preventScroll: true }); }
+  function say(id, text, bad) { const m = $(id); m.textContent = text; m.classList.toggle("bad", !!bad); }
+  $("menu").addEventListener("click", openSheet);
+  $("s-close").addEventListener("click", closeSheet);
+  $("scrim").addEventListener("click", closeSheet);
+  addEventListener("keydown", e => { if (e.key === "Escape" && document.body.classList.contains("open")) closeSheet(); });
+
+  $("s-name-save").addEventListener("click", () => { S.name = $("s-name").value; greet(); $("s-name-save").textContent = "Saved"; setTimeout(() => $("s-name-save").textContent = "Save", 1200); });
+  $("s-voice").addEventListener("change", e => { S.voice = e.target.checked; if (!e.target.checked) IANChat.voice.stop(); });
+  $("s-note-add").addEventListener("click", () => { const v = $("s-note").value.trim(); if (!v) return; S.notes = S.notes.concat(v); $("s-note").value = ""; drawLists(); });
+
+  async function probe(url, passcode) {
+    const res = await fetch(url, { headers: passcode ? { Authorization: "Bearer " + passcode } : {} });
+    if (res.status === 401) return { badPass: true };
+    if (res.status === 429) return { locked: true };
+    if (!res.ok) throw new Error("status " + res.status);
+    return res.json();
+  }
+  $("s-brain-save").addEventListener("click", async () => {
+    const v = $("s-brain").value.trim().replace(/\/+$/, "");
+    if (v && !/^https:\/\/[^\s/]+/.test(v)) return say("s-brain-msg", "That needs to be an https:// address.", true);
+    S.brain = v; chat.refresh();
+    if (!v) return say("s-brain-msg", "Saved. Running on the local core.");
+    say("s-brain-msg", "Checking the worker…");
+    try {
+      const j = await probe(v);
+      say("s-brain-msg", j.provider === "none" ? "Worker found, but it has no API key yet. Add one in Cloudflare." : `Connected. Brain: ${j.provider}. Private mode ${j.privateMode ? "available" : "not set up"}.`, j.provider === "none");
+    } catch (e) { say("s-brain-msg", "Couldn't reach that worker. Check the address and its ALLOWED_ORIGIN setting.", true); }
+  });
+  $("s-pass-save").addEventListener("click", async () => {
+    if (S.passcode) { S.passcode = ""; chat.refresh(); $("s-pass-save").textContent = "Unlock"; return say("s-pass-msg", "Locked. IAN is back to public mode."); }
+    const p = $("s-pass").value;
+    if (!p) return say("s-pass-msg", "Type your passcode first.", true);
+    if (!S.brain) return say("s-pass-msg", "Private mode needs the worker. Add its address under Brain first.", true);
+    say("s-pass-msg", "Checking…");
+    try {
+      const j = await probe(S.brain, p);
+      if (j.locked) return say("s-pass-msg", "Too many wrong tries. Wait 10 minutes.", true);
+      if (j.badPass || !j.unlocked) return say("s-pass-msg", j.badPass ? "That passcode didn't match." : "The worker has no OWNER_PASSCODE set yet.", true);
+      S.passcode = p; chat.refresh(); $("s-pass").value = ""; $("s-pass-save").textContent = "Lock";
+      say("s-pass-msg", "Unlocked. IAN is now your private assistant on this device.");
+    } catch (e) { say("s-pass-msg", "Couldn't reach the worker. Check your connection.", true); }
+  });
+  $("s-wipe").addEventListener("click", () => {
+    const b = $("s-wipe");
+    if (b.dataset.sure !== "1") { b.dataset.sure = "1"; b.textContent = "Tap again to delete everything"; setTimeout(() => { b.dataset.sure = ""; b.textContent = "Delete all chats and memory"; }, 3500); return; }
+    IANChat.chats.clear(); S.notes = []; chat.newChat(); drawLists(); b.dataset.sure = ""; b.textContent = "Deleted";
+    setTimeout(() => b.textContent = "Delete all chats and memory", 1500);
+  });
+
+  // ----- install hint (iPhone Safari, not already installed)
+  const standalone = matchMedia("(display-mode: standalone)").matches || navigator.standalone;
+  const ios = /iPhone|iPad|iPod/.test(navigator.userAgent) && !window.Capacitor;
+  let dismissed = false; try { dismissed = localStorage.getItem("ian2:install-x") === "1"; } catch (e) {}
+  if (ios && !standalone && !dismissed) $("install").classList.add("show");
+  $("install-x").addEventListener("click", () => { $("install").classList.remove("show"); try { localStorage.setItem("ian2:install-x", "1"); } catch (e) {} });
+
+  // ----- offline shell
+  if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("../sw.js", { scope: "../" }).catch(() => {});
+  if (!touch && window.top === window) input.focus();   // never steal focus (and scroll) when embedded in the site
+})();
+</script>
+</body>
+</html>

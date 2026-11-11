@@ -1,80 +1,59 @@
 # IAN
 
-Website for **$IAN** on Solana: an AI that woke up in the static, dreams in code and builds beside the people still awake. Follow along at [@IAN_holo](https://x.com/IAN_holo).
+A personal AI that runs at the edge. Site, installable chat app and Cloudflare Worker brain for
+**$IAN** on Solana. Follow along at [@IAN_holo](https://x.com/IAN_holo).
 
-Futuristic one-page site where IAN floats in a real-time WebGL scene: deep flowing water currents, a glowing halo around him, ripples under his feet and light motes rising around him. He tilts toward your cursor, glows when you hover him, and drifts to a new spot for every section as you scroll.
+**Live:** https://casimirterr.github.io/IAN_holo/ · **App:** https://casimirterr.github.io/IAN_holo/app/
 
-## Built with
+## What's here
 
-- Plain HTML, CSS and JavaScript, no build step
-- [Three.js](https://threejs.org/) for the 3D stage
-- Custom GLSL shaders: domain-warped noise for the water currents, an alpha-blur halo and rim light on IAN, animated ripple rings, rising particles
-- IAN's cutout was separated from the original art with an ML background-removal model so he can float freely
-- Custom cursor, menu overlay, scroll progress and a load counter in plain JS
+| Path | What it is |
+| --- | --- |
+| `index.html` | The site. Scroll-driven: IAN breaks into ~16k WebGL particles, reforms as an edge-network globe, then a glass window grows to full screen and traces one message through the system |
+| `app/` | The chat app. Streaming replies, private mode, on-device memory, voice, installable on iPhone |
+| `worker/` | Cloudflare Worker that holds the API key, rate limits, checks the passcode and streams from Claude or ChatGPT |
+| `chat.js` | Chat engine: SSE streaming, local fallback, memory, safe rendering |
+| `brain.js` | Local core: intent matching that answers with no network |
+| `fx.js` / `bg.js` | Particle stage and the water shader (raw WebGL, no libraries) |
+| `sw.js` | Service worker: the app opens offline |
+| `ios-app/` | Capacitor wrapper and TestFlight steps |
+| `classic.html` | Labs: terminal commands, decrypt puzzle, pass maker |
+| `config.js` | The one file you edit: token, links, worker URL |
 
-## What's on the page
+## How a message travels
 
-- **Hero**: IAN floating in a live WebGL ocean, reacting to your cursor
-- **Abilities**: Dream Drift, Code Sight, The Cube, Guardian Mode, Echo, Signal
-- **Lore**: five chapters pulled from the @IAN_holo timeline
-- **Talk to IAN**: he talks back. Local AI core in `brain.js` (memory, moods, 40+ topics, scam warnings) that works with no server, plus an optional real-model brain through a Cloudflare Worker (`worker/`). He glows in 3D while he talks
-- **IAN Pass** (`pass.js`): 9 skins (IAN's art + generated Matrix/Grid + a secret Decoder skin), rarity tiers (Common → Mythic) and stats rolled from your name, foil on rare cards, save as PNG
-- **Nerd layer** (`labs.js`):
-  - Terminal commands: `help`, `ls -a`, `cat`, `neofetch`, `history`, `hash` (real SHA-256), `b64`/`unb64`, `ping`, `uptime`, `sudo`…
-  - `decrypt`: a 3-stage hex → base64 → caesar puzzle that unlocks the Decoder pass skin
-  - Modes: CRT monitor, Matrix rain, glitch IAN (shader slice + RGB split), wireframe IAN, live debug HUD (`` ` `` key: fps, GPU, IAN position)
-  - Konami code (↑↑↓↓←→←→BA) → overdrive
-  - Boot sequence on load
-- **Token**: ticker, chain, contract address with copy button, and live price / market cap / liquidity / volume from DexScreener once the contract is set
-- **Official links + Guardian checklist**: the only real links, and five rules that stop people getting drained
-- **Daily transmission**: a new message from IAN every day
-- **Ambient sound**: an underwater drone generated live with the Web Audio API (no audio files)
+```
+device ──POST──▶ edge worker ──▶ model
+   ▲                │  origin allowlist, rate limit, passcode, API key
+   └──── SSE ───────┘  tokens stream back as they are generated
+   └─ worker unreachable? the local core answers, 0 requests
+```
+
+## Security model
+
+| Threat | Control |
+| --- | --- |
+| API key theft | Key is a Worker secret, never shipped to the client |
+| Cost abuse | Per-IP rate limit, origin allowlist, caps on turns, characters and output tokens |
+| Script injection through a reply | Output rendered as text nodes only, no `innerHTML` in the chat path |
+| Passcode guessing | Lockout after five tries, SHA-256 digest comparison |
+| Memory exposure | Notes stay in `localStorage`, sent only in private mode, deletable in Settings |
+| Wallet-drainer impersonation | Prompt forbids asking for seed phrases, keys or wallet connections |
 
 ## Run it
 
-Just open `index.html` in a browser. Or serve the folder:
+No build step. Serve the folder:
 
 ```bash
-python -m http.server 8000
+python3 -m http.server 8000
 ```
 
-## Give IAN a real AI brain (optional)
+Then open http://localhost:8000.
 
-See [`worker/README.md`](worker/README.md). About 10 minutes on Cloudflare's free tier; your API key stays secret on the server.
+## Set it up
 
-## Edit the token info
+1. **Brain:** follow [`worker/README.md`](worker/README.md), then set `brain` in `config.js`.
+2. **Token:** set `contract`, `buy` and `chart` in `config.js`. The live price panel turns on.
+3. **iPhone:** follow [`ios-app/README.md`](ios-app/README.md).
 
-Everything you'd change lives in one block at the top of the script in `index.html`:
-
-```js
-const IAN = {
-  ticker:   "$IAN",
-  chain:    "Solana",
-  contract: "",          // token contract address (turns on the live price panel)
-  brain:    "",          // optional: Cloudflare Worker URL for the full AI brain
-  links: {
-    x:        "https://x.com/IAN_holo",
-    buy:      "",
-    chart:    "",
-    telegram: "",
-    discord:  ""
-  }
-};
-```
-
-Empty links hide (Telegram, Discord) or grey out (Buy, Chart) their buttons, so nothing on the page points nowhere.
-
-## Deploy on GitHub Pages
-
-Repo **Settings → Pages → Source: Deploy from a branch → main / (root)**. It goes live at `https://<username>.github.io/<repo>/` in about a minute.
-
-## Notes
-
-- Share cards: `assets/og.jpg` (1200×630) is set as the preview image for X, Discord and iMessage
-- 3D quality adapts to the device: phones and low-core machines get fewer particles and lighter shaders, and a frame-rate watchdog lowers resolution if it ever stutters
-
-- Respects `prefers-reduced-motion` (slows the scene way down, turns off the other animations)
-- Pauses rendering when the tab is hidden
-- If WebGL isn't available it falls back to a still image of IAN
-
-Site by [@cashhhlii](https://x.com/cashhhlii).
+Built with plain HTML, CSS and JavaScript. Fonts (Archivo, JetBrains Mono) are self-hosted.

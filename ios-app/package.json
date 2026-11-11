@@ -1,0 +1,11 @@
+{
+  "name": "ian-ios",
+  "private": true,
+  "version": "1.0.0",
+  "description": "iOS wrapper for the IAN chat app (Capacitor)",
+  "scripts": {
+    "build": "node scripts/build-web.mjs",
+    "sync": "npm run build && npx cap sync ios",
+    "open": "npx cap open ios"
+  }
+}
