@@ -9,9 +9,9 @@ A personal AI that runs at the edge. Site, installable chat app and Cloudflare W
 
 | Path | What it is |
 | --- | --- |
-| `index.html` | The site. Scroll-driven: IAN breaks into ~16k WebGL particles, reforms as an edge-network globe, then a glass window grows to full screen and traces one message through the system |
+| `index.html` | The site. IAN assembles from ~16k WebGL particles on load, tracks the pointer, and shows live vitals (frame time, edge latency, pulse). Scrolling turns him into an edge-network globe, then a glass window grows to full screen and traces one message through the system |
 | `app/` | The chat app. Streaming replies, private mode, on-device memory, voice, installable on iPhone |
-| `worker/` | Cloudflare Worker that holds the API key, rate limits, checks the passcode and streams from Claude or ChatGPT |
+| `worker/` | Cloudflare Worker that rate limits, checks the passcode and streams from Workers AI or Gemini (free), or Claude or ChatGPT (paid) |
 | `chat.js` | Chat engine: SSE streaming, local fallback, memory, safe rendering |
 | `brain.js` | Local core: intent matching that answers with no network |
 | `fx.js` / `bg.js` | Particle stage and the water shader (raw WebGL, no libraries) |
@@ -52,7 +52,7 @@ Then open http://localhost:8000.
 
 ## Set it up
 
-1. **Brain:** follow [`worker/README.md`](worker/README.md), then set `brain` in `config.js`.
+1. **Brain:** follow [`worker/README.md`](worker/README.md) (free, no API key), then set `brain` in `config.js`. Until then IAN answers from his offline core.
 2. **Token:** set `contract`, `buy` and `chart` in `config.js`. The live price panel turns on.
 3. **iPhone:** follow [`ios-app/README.md`](ios-app/README.md).
 

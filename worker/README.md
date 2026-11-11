@@ -1,27 +1,29 @@
 # IAN's brain (Cloudflare Worker)
 
-The site and app work without this: the local core answers in the browser. Deploy the Worker to
-put a real language model behind IAN.
+Without this, IAN only has his offline core: a few dozen scripted replies. Deploy the Worker to
+put a real language model behind him. The free setup below needs no API key.
 
-The API key stays inside Cloudflare as a secret. It is never in the repo, the page or the app.
+Any key you add stays inside Cloudflare as a secret. It is never in the repo, the page or the app.
 
-## Deploy (about 10 minutes, free tier)
+## Free setup (about 5 minutes, no API key, no card)
+
+This uses Cloudflare Workers AI, which runs an open model inside Cloudflare with a free daily
+allowance (10,000 "neurons" a day, roughly 100 to 200 replies).
 
 1. Make a free account at [dash.cloudflare.com](https://dash.cloudflare.com).
-2. Get an API key and add a few dollars of credit. **Set a monthly spend limit while you're there.**
-   - Claude: [console.anthropic.com](https://console.anthropic.com)
-   - or ChatGPT: [platform.openai.com](https://platform.openai.com)
-3. In Cloudflare: **Workers & Pages → Create → Create Worker**. Name it `ian-brain`, click **Deploy**.
-4. Click **Edit code**, delete what's there, paste everything from `worker.js`, click **Deploy**.
-5. Open the worker's **Settings → Variables and Secrets** and add:
+2. **Workers & Pages → Create → Create Worker**. Name it `ian-brain`, click **Deploy**.
+3. Click **Edit code**, delete what's there, paste everything from `worker.js`, click **Deploy**.
+4. Open the worker's **Settings → Bindings → Add → Workers AI**. Set the variable name to `AI`
+   (capital letters) and save.
+5. Still in Settings, under **Variables and Secrets**, add:
 
    | Name | Type | Value |
    | --- | --- | --- |
-   | `ANTHROPIC_API_KEY` | Secret | your Claude key (or use `OPENAI_API_KEY` instead) |
-   | `OWNER_PASSCODE` | Secret | a long passcode only you know. Unlocks private mode |
    | `ALLOWED_ORIGIN` | Text | `https://casimirterr.github.io,capacitor://localhost` |
+   | `OWNER_PASSCODE` | Secret | a long passcode only you know. Unlocks private mode |
 
-6. Copy the worker's URL (it looks like `https://ian-brain.<you>.workers.dev`).
+6. Copy the worker's URL (it looks like `https://ian-brain.<you>.workers.dev`). Opening it in a
+   browser should show `{"ok":true,"provider":"workers-ai",...}`.
 7. Put it in `config.js`:
    ```js
    brain: "https://ian-brain.<you>.workers.dev",
@@ -29,6 +31,22 @@ The API key stays inside Cloudflare as a secret. It is never in the repo, the pa
 8. Commit and push. The status under IAN's name switches from **Local core** to **Edge brain · live**.
 
 To test before pushing, open the app, tap the menu, and paste the URL under **Brain**.
+
+## Other brains
+
+The worker uses the first one it finds, in this order. Add the key as a **Secret**.
+
+| Secret | Brain | Cost |
+| --- | --- | --- |
+| `ANTHROPIC_API_KEY` | Claude | paid, pay per use. No standing free API tier |
+| `OPENAI_API_KEY` | ChatGPT | paid, pay per use. No free API tier for text |
+| `GEMINI_API_KEY` | Google Gemini | free tier with a key from [aistudio.google.com](https://aistudio.google.com). On the free tier Google may use what you send to improve its products |
+| `AI` binding | Cloudflare Workers AI | free daily allowance, no key |
+
+The free apps (claude.ai, chatgpt.com, gemini.google.com) can't be plugged into a website. Only the
+developer APIs can, and of those only Gemini and Workers AI have a standing free tier.
+
+If you use a paid key, set a monthly spend limit in that provider's console.
 
 ## Private mode
 
@@ -43,8 +61,10 @@ Open the app → menu → **Private mode** → enter your `OWNER_PASSCODE`.
 | Memory notes | not sent | sent, and IAN can add new ones |
 | Rate limit | 20 / 10 min / IP | 150 / 10 min / IP |
 
-Override models with the `MODEL`, `OWNER_MODEL` or `OPENAI_MODEL` variables. If you use an OpenAI
-key, set `OPENAI_MODEL` to a model your account has access to.
+Override models with the `MODEL`, `OWNER_MODEL`, `OPENAI_MODEL`, `GEMINI_MODEL` or `CF_MODEL`
+variables. Model names change: if a brain returns errors, set the variable to a model that provider
+currently lists. On the free brains both modes use the same model; private mode still gets the
+longer answers, more history and memory.
 
 ## API
 

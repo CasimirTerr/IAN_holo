@@ -1,6 +1,6 @@
 // Offline shell for the IAN app. Network first for pages (so updates show up),
 // cache first for static files. Requests to the brain worker are never cached.
-const CACHE = "ian-v4";
+const CACHE = "ian-v5";
 const SHELL = [
   "./", "index.html", "app/index.html", "base.css", "config.js", "brain.js", "chat.js", "bg.js", "fx.js",
   "assets/fonts/archivo.woff2", "assets/fonts/jetbrains-mono.woff2", "assets/ian-float.webp", "assets/ian-face.jpg", "assets/icon-192.png", "assets/icon-180.png", "manifest.webmanifest"

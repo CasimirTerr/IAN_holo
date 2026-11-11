@@ -155,24 +155,30 @@
 
     let chat = chats.get(LS.get("current", "")) || { id: uid(), title: "", t: Date.now(), msgs: [] };
     let busy = false, status = "local", abort = null;
-    const listeners = { status: [], talk: [], change: [] };
+    const listeners = { status: [], talk: [], change: [], state: [] };
     const emit = (k, v) => listeners[k].forEach(f => { try { f(v); } catch (e) {} });
+    // other open IAN pages (the site embeds this app) hear what he's doing
+    let bc = null; try { bc = new BroadcastChannel("ian"); } catch (e) {}
+    const state = (name, data) => { emit("state", Object.assign({ name }, data)); try { bc && bc.postMessage(Object.assign({ type: "state", name }, data)); } catch (e) {} };
+    const metaText = m => !m ? "" : m.src === "local" ? `local core · 0 requests · ${m.total} ms`
+      : `${m.src === "private" ? "private" : "edge"} · first token ${m.ttft} ms · ${(m.total / 1000).toFixed(1)} s · ${m.rate} chars/s`;
 
     function setStatus(s) { if (s !== status) { status = s; emit("status", s); } }
     function initialStatus() { setStatus(settings.brain ? (settings.passcode ? "private" : "edge") : "local"); }
 
-    function bubble(role, text) {
+    function bubble(role, text, meta) {
       const row = el("div", "ic-msg ic-" + role);
       const b = el("div", "ic-bubble");
       if (role === "user") b.textContent = text; else render(b, text);
       row.appendChild(b); log.appendChild(row);
+      if (meta) log.appendChild(el("div", "ic-meta", metaText(meta)));
       return b;
     }
     function note(text) { const n = el("div", "ic-note", text); log.appendChild(n); scroll(); }
     function scroll() { log.scrollTop = log.scrollHeight; }
     function paint() {
       log.textContent = "";
-      chat.msgs.forEach(m => bubble(m.role === "user" ? "user" : "ian", m.content));
+      chat.msgs.forEach(m => bubble(m.role === "user" ? "user" : "ian", m.content, m.meta));
       root.classList.toggle("ic-empty", chat.msgs.length === 0);
       scroll(); emit("change", chat);
     }
@@ -203,7 +209,9 @@
       b.append(el("i"), el("i"), el("i")); scroll(); emit("change", chat);
 
       let answer = "", facts = [];
-      const url = settings.brain;
+      const url = settings.brain, t0 = performance.now();
+      const meta = { src: "local", ttft: 0, total: 0, rate: 0 };
+      state("thinking");
       const attempt = async passcode => {
         abort = new AbortController();
         const timer = setTimeout(() => abort.abort(), 45000);
@@ -216,10 +224,13 @@
             memory: { name: settings.name, notes: owner ? settings.notes : [] },
             now: owner ? new Date().toString().slice(0, 33) : undefined
           }, passcode, full => {
-            if (first) { b.classList.remove("ic-thinking"); first = false; }
+            if (first) { b.classList.remove("ic-thinking"); first = false; meta.ttft = Math.round(performance.now() - t0); }
+            const dt = (performance.now() - t0 - meta.ttft) / 1000;
+            meta.rate = dt > .05 ? Math.round(full.length / dt) : 0;
+            state("speaking", { rate: meta.rate, ttft: meta.ttft });
             render(b, splitMemory(full).text); scroll(); emit("talk", .8);
           }, abort.signal);
-          setStatus(out.mode === "owner" ? "private" : "edge");
+          setStatus(out.mode === "owner" ? "private" : "edge"); meta.src = out.mode === "owner" ? "private" : "edge";
           return out.text;
         } finally { clearTimeout(timer); }
       };
@@ -242,17 +253,21 @@
           if (url) note("Edge brain unreachable. Answered by the local core.");
           setStatus("local");
         }
+        meta.src = "local"; meta.ttft = 0; state("speaking", { rate: 0 });
         await typeOut(b, answer);
       }
 
       b.classList.remove("ic-thinking"); render(b, answer || "…");
+      meta.total = Math.round(performance.now() - t0);
+      if (meta.src === "local") meta.total = Math.min(meta.total, 99);
+      log.appendChild(el("div", "ic-meta", metaText(meta)));
       if (facts.length && settings.passcode) {
         const have = settings.notes, lower = have.map(x => x.toLowerCase());
         const fresh = facts.filter(f => !lower.includes(f.toLowerCase()));
         if (fresh.length) { settings.notes = have.concat(fresh); note("Saved to memory: " + fresh.join(" · ")); }
       }
-      chat.msgs.push({ role: "assistant", content: answer });
-      persist(); scroll();
+      chat.msgs.push({ role: "assistant", content: answer, meta });
+      persist(); scroll(); state("idle", { meta });
       if (settings.voice) voice.speak(answer);
       busy = false; root.classList.remove("ic-busy"); emit("change", chat);
     }

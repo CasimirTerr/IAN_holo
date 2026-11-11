@@ -17,7 +17,7 @@
 
   const VERT = `
 attribute vec3 a, b, ca, cb; attribute float s;
-uniform float m, t, asp, px, alpha; uniform vec2 rot, size; uniform vec3 oa, ob;
+uniform float m, t, asp, px, alpha; uniform vec2 rot, size, ptr; uniform vec3 oa, ob;
 varying vec3 vc; varying float va;
 vec3 ry(vec3 p, float r){ float c = cos(r), n = sin(r); return vec3(c*p.x + n*p.z, p.y, -n*p.x + c*p.z); }
 void main(){
@@ -26,6 +26,8 @@ void main(){
   float sw = sin(k*3.14159);
   p += sw*.16*vec3(sin(s*40. + t*.6), cos(s*57. + t*.5), sin(s*23. - t*.4));
   p.xy += .0035*vec2(sin(t*.9 + s*90.), cos(t*.8 + s*70.));
+  vec2 dl = p.xy - ptr; float dd = length(dl);            // particles lean away from the pointer
+  p.xy += dl/(dd + .0001)*.05*smoothstep(.15, 0., dd);
   float w = 1./(1. - p.z*.55);
   gl_Position = vec4(p.x*w*2./asp, p.y*w*2., 0., 1.);
   gl_PointSize = mix(size.x, size.y, k)*px*w*(.7 + .6*fract(s*7.31));
@@ -43,7 +45,7 @@ void main(){ float d = length(gl_PointCoord - .5); float f = smoothstep(.5, .12,
   gl.useProgram(prog);
   gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE); gl.clearColor(0, 0, 0, 0);
   const U = n => gl.getUniformLocation(prog, n);
-  const u = { m: U("m"), t: U("t"), asp: U("asp"), px: U("px"), alpha: U("alpha"), rot: U("rot"), size: U("size"), oa: U("oa"), ob: U("ob") };
+  const u = { m: U("m"), t: U("t"), asp: U("asp"), px: U("px"), alpha: U("alpha"), rot: U("rot"), size: U("size"), oa: U("oa"), ob: U("ob"), ptr: U("ptr") };
   function attr(name, n) { const buf = gl.createBuffer(), loc = gl.getAttribLocation(prog, name); gl.bindBuffer(gl.ARRAY_BUFFER, buf); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, n, gl.FLOAT, false, 0, 0); return buf; }
   const B = { a: attr("a", 3), b: attr("b", 3), ca: attr("ca", 3), cb: attr("cb", 3), s: attr("s", 1) };
   const seeds = new Float32Array(N); for (let i = 0; i < N; i++) seeds[i] = Math.random();
@@ -129,13 +131,19 @@ void main(){ float d = length(gl_PointCoord - .5); float f = smoothstep(.5, .12,
 
   // ---------------------------------------------------------------- timeline
   let ready = false, seg = -1, target = 0, cur = 0, fade = 0, fadeTarget = 0, raf = 0, visible = true;
-  function upload(i) {
-    seg = i; const A = shapes[i], Bs = shapes[i + 1];
+  let intro = !still, introStart = 0; const INTRO_MS = 2600;
+  const ptr = [9, 9], nudge = [0, 0];
+  addEventListener("pointermove", e => { ptr[0] = (e.clientX / innerWidth - .5) * asp; ptr[1] = .5 - e.clientY / innerHeight; }, { passive: true });
+  document.addEventListener("pointerleave", () => { ptr[0] = ptr[1] = 9; });
+  function born() { if (!intro) return; intro = false; seg = -1; fade = 1; window.dispatchEvent(new Event("ian:born")); }
+  function uploadPair(A, Bs) {
     gl.bindBuffer(gl.ARRAY_BUFFER, B.a); gl.bufferData(gl.ARRAY_BUFFER, A.pos, gl.DYNAMIC_DRAW);
     gl.bindBuffer(gl.ARRAY_BUFFER, B.b); gl.bufferData(gl.ARRAY_BUFFER, Bs.pos, gl.DYNAMIC_DRAW);
     gl.bindBuffer(gl.ARRAY_BUFFER, B.ca); gl.bufferData(gl.ARRAY_BUFFER, A.col, gl.DYNAMIC_DRAW);
     gl.bindBuffer(gl.ARRAY_BUFFER, B.cb); gl.bufferData(gl.ARRAY_BUFFER, Bs.col, gl.DYNAMIC_DRAW);
   }
+  const withNudge = sh => sh === shapes[0] ? [sh.off[0] + nudge[0], sh.off[1] + nudge[1], sh.off[2]] : sh.off;
+  function upload(i) { seg = i; uploadPair(shapes[i], shapes[i + 1]); }
   function resize() {
     const d = Math.min(devicePixelRatio || 1, 1.5), w = Math.round(innerWidth * d), h = Math.round(innerHeight * d);
     if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; gl.viewport(0, 0, w, h); }
@@ -143,16 +151,25 @@ void main(){ float d = length(gl_PointCoord - .5); float f = smoothstep(.5, .12,
   }
   function draw(now) {
     const time = now / 1000;
-    cur += (target - cur) * (still ? 1 : .12); fade += (fadeTarget - fade) * (still ? 1 : .15);
-    const i = Math.min(2, Math.floor(cur)), m = Math.min(1, cur - i);
-    if (i !== seg) upload(i);
-    const A = shapes[i], Bs = shapes[i + 1];
+    let A, Bs, m, a;
+    if (intro) {                                   // first seconds of life: the field pulls together into IAN
+      if (!introStart) introStart = now;
+      const p = Math.min(1, (now - introStart) / INTRO_MS);
+      if (seg !== 99) { seg = 99; uploadPair(shapes[2], shapes[0]); }
+      A = shapes[2]; Bs = shapes[0]; m = p; a = Math.min(1, p * 4) * (.5 + .5 * p);
+      if (p >= 1 || target > .03) { born(); return; }
+    } else {
+      cur += (target - cur) * (still ? 1 : .12); fade += (fadeTarget - fade) * (still ? 1 : .15);
+      const i = Math.min(2, Math.floor(cur)); m = Math.min(1, cur - i);
+      if (i !== seg) upload(i);
+      A = shapes[i]; Bs = shapes[i + 1]; a = fade * (A.alpha + (Bs.alpha - A.alpha) * m);
+    }
     gl.clear(gl.COLOR_BUFFER_BIT);
-    if (fade < .004) return;
+    if (a < .004) return;
     gl.uniform1f(u.m, m); gl.uniform1f(u.t, still ? 0 : time); gl.uniform1f(u.asp, asp);
-    gl.uniform1f(u.px, canvas.height / 860); gl.uniform1f(u.alpha, fade * (A.alpha + (Bs.alpha - A.alpha) * m));
+    gl.uniform1f(u.px, canvas.height / 860); gl.uniform1f(u.alpha, a); gl.uniform2f(u.ptr, ptr[0], ptr[1]);
     gl.uniform2f(u.rot, still ? .6 * (A.spin ? 1 : 0) : time * A.spin, still ? .6 * (Bs.spin ? 1 : 0) : time * Bs.spin);
-    gl.uniform2f(u.size, A.size, Bs.size); gl.uniform3fv(u.oa, A.off); gl.uniform3fv(u.ob, Bs.off);
+    gl.uniform2f(u.size, A.size, Bs.size); gl.uniform3fv(u.oa, withNudge(A)); gl.uniform3fv(u.ob, withNudge(Bs));
     gl.drawArrays(gl.POINTS, 0, N);
   }
   function loop(now) { raf = requestAnimationFrame(loop); if (visible) draw(now); }
@@ -165,6 +182,7 @@ void main(){ float d = length(gl_PointCoord - .5); float f = smoothstep(.5, .12,
       let rt = 0; addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(() => { buildAll(img); if (still) draw(0); }, 200); });
       if (still) { draw(0); } else { raf = requestAnimationFrame(loop); document.addEventListener("visibilitychange", () => { cancelAnimationFrame(raf); if (!document.hidden) raf = requestAnimationFrame(loop); }); }
       document.documentElement.classList.add("fx-ready");
+      if (still) window.dispatchEvent(new Event("ian:born"));
     };
     (document.fonts && document.fonts.load ? document.fonts.load('900 100px Archivo').then(go, go) : go());
   };
@@ -173,6 +191,10 @@ void main(){ float d = length(gl_PointCoord - .5); float f = smoothstep(.5, .12,
   window.IANFx = {
     // t: 0 figure .. 3 wordmark, alpha: overall visibility 0..1
     set(t, alpha) { target = Math.max(0, Math.min(3, t)); fadeTarget = alpha; if (still && ready) { cur = target; fade = alpha; draw(0); } },
-    show(v) { visible = v; }
+    show(v) { visible = v; },
+    // keep the particle body locked to the artwork as it bobs and leans (values in px)
+    nudge(xPx, yPx) { nudge[0] = xPx / innerHeight; nudge[1] = -yPx / innerHeight; },
+    skipIntro: born,
+    info: { particles: N, gpu: (() => { try { const e = gl.getExtension("WEBGL_debug_renderer_info"); return e ? String(gl.getParameter(e.UNMASKED_RENDERER_WEBGL)) : "webgl"; } catch (x) { return "webgl"; } })() }
   };
 })();

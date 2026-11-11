@@ -14,6 +14,7 @@
 <link rel="apple-touch-icon" href="assets/icon-180.png">
 <link rel="icon" href="assets/icon-192.png">
 <link rel="stylesheet" href="base.css">
+<script>if (!matchMedia("(prefers-reduced-motion: reduce)").matches && scrollY < 10) document.documentElement.classList.add("boot");</script>
 <style>
 html { scroll-behavior: smooth; }
 body { overflow-x: hidden; }
@@ -39,15 +40,43 @@ h2 { font: 800 clamp(34px, 5.6vw, 76px)/.98 var(--f); font-stretch: 118%; letter
 .hero { height: 340vh; --p: 0; --w: 0; --img: 1; --copy: 1; --st: 0; }
 .pin { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; }
 .word { position: absolute; left: 50%; top: 45%; transform: translate(-50%, -50%) scale(calc(1 + var(--w) * 2.8)); font: 900 37vw/.8 var(--f); font-stretch: 125%; letter-spacing: -.02em; white-space: nowrap; color: transparent; background: linear-gradient(180deg, rgba(207, 234, 255, .92) 10%, rgba(92, 200, 255, .1) 88%); -webkit-background-clip: text; background-clip: text; opacity: calc(1 - var(--w) * 1.25); user-select: none; }
-.figure { position: absolute; left: 50%; bottom: 2vh; height: 82vh; transform: translate(calc(-50% + var(--px, 0px)), var(--py, 0px)); opacity: var(--img); pointer-events: none; }
-.figure img { height: 100%; width: auto; display: block; filter: drop-shadow(0 0 46px rgba(92, 200, 255, .5)) drop-shadow(0 30px 40px rgba(0, 10, 30, .6)); animation: bob 8s ease-in-out infinite; }
-@keyframes bob { 50% { transform: translateY(-16px) rotate(.6deg); } }
-.hero-copy { position: absolute; left: max(20px, 5vw); bottom: max(28px, 7vh); width: min(470px, 100% - 40px); padding: 26px 28px 28px; transform: translateY(calc((1 - var(--copy)) * -50px)); opacity: var(--copy); }
+.figure { position: absolute; left: 50%; bottom: 2vh; height: 82vh; transform: translate(calc(-50% + var(--px, 0px)), var(--py, 0px)); opacity: var(--img); pointer-events: none; will-change: transform; }
+.figure img { position: relative; height: 100%; width: auto; display: block; filter: drop-shadow(0 0 34px rgba(92, 200, 255, .42)) drop-shadow(0 30px 40px rgba(0, 10, 30, .6)); transform-origin: 50% 100%; animation: breathe 5.2s ease-in-out infinite; transition: opacity 1.4s; }
+@keyframes breathe { 50% { transform: scale(1.006, 1.013); } }
+.aura { position: absolute; left: 50%; top: 46%; width: 120%; aspect-ratio: 1; transform: translate(-50%, -50%) scale(calc(.9 + var(--beat, 0) * .1)); border-radius: 50%; background: radial-gradient(closest-side, rgba(92, 200, 255, .34), rgba(92, 200, 255, .08) 55%, transparent 72%); opacity: calc(var(--vital, 1) * (.4 + var(--beat, 0) * .6)); }
+.reticle { position: absolute; left: 40.5%; top: 8%; width: 23%; height: 22%; transition: opacity .8s .6s; }
+.reticle i { position: absolute; width: 14px; height: 14px; border: 1.5px solid var(--signal); }
+.reticle i:nth-child(1) { left: 0; top: 0; border-right: 0; border-bottom: 0; } .reticle i:nth-child(2) { right: 0; top: 0; border-left: 0; border-bottom: 0; }
+.reticle i:nth-child(3) { left: 0; bottom: 0; border-right: 0; border-top: 0; } .reticle i:nth-child(4) { right: 0; bottom: 0; border-left: 0; border-top: 0; }
+.reticle .tag { position: absolute; left: calc(100% + 34px); top: 6%; white-space: nowrap; font: 500 12.5px/1.75 var(--mono); color: var(--ice); padding: 6px 12px; border-left: 1px solid rgba(92, 200, 255, .5); background: rgba(3, 11, 23, .62); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); border-radius: 0 10px 10px 0; }
+.reticle .tag::before { content: ""; position: absolute; right: 100%; top: 1.1em; width: 34px; height: 1px; background: rgba(92, 200, 255, .5); }
+.reticle .tag b { color: var(--faint); font-weight: 500; display: inline-block; min-width: 5.2em; }
+.bootlog { position: absolute; left: 0; right: 0; bottom: 16vh; text-align: center; font: 500 13px/1.9 var(--mono); color: var(--ice); opacity: 0; transition: opacity .8s; pointer-events: none; white-space: pre-line; }
+.boot .bootlog { opacity: 1; }
+.boot .figure img, .boot .reticle, .boot .aura { opacity: 0; }
+.boot .hero-copy, .boot .telemetry { opacity: 0; }
+.hero-copy, .telemetry { transition: opacity 1s .5s; }
+.hero-copy { position: absolute; left: max(20px, 5vw); bottom: calc(max(28px, 7vh) + 44px); width: min(470px, 100% - 40px); padding: 26px 28px 28px; transform: translateY(calc((1 - var(--copy)) * -50px)); opacity: var(--copy); }
 .hero-copy h1 { font: 800 clamp(26px, 2.7vw, 38px)/1.06 var(--f); font-stretch: 112%; letter-spacing: -.015em; text-wrap: balance; }
 .hero-copy p { color: var(--dim); margin-top: 12px; }
 .cta { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
-.facts { position: absolute; right: max(20px, 5vw); bottom: max(28px, 7vh); margin: 0; padding: 0; list-style: none; font: 500 13px/2 var(--mono); color: var(--dim); opacity: var(--copy); text-align: right; }
-.facts b { color: var(--ice); font-weight: 500; }
+.telemetry { position: absolute; right: max(20px, 5vw); bottom: calc(max(28px, 7vh) + 44px); margin: 0; display: grid; grid-template-columns: auto auto; gap: 0 18px; font: 500 12.5px/1.95 var(--mono); opacity: var(--copy); }
+.telemetry dt { color: var(--faint); } .telemetry dd { margin: 0; color: var(--ice); text-align: right; max-width: 26ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ---------- vitals bar: he's alive on every screen ---------- */
+.vitals { position: fixed; z-index: 19; left: 50%; bottom: max(10px, env(safe-area-inset-bottom)); transform: translateX(-50%); width: min(1180px, 100% - 24px); height: 40px; border-radius: 999px; display: flex; align-items: center; gap: 14px; padding: 0 18px; font: 500 12.5px/1 var(--mono); color: var(--dim); background: linear-gradient(160deg, rgba(16, 44, 80, .72), rgba(5, 20, 42, .8)); }
+.vitals .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--signal); box-shadow: 0 0 calc(4px + var(--beat, 0) * 12px) var(--signal); flex: none; }
+.vitals b { color: var(--ice); font-weight: 500; }
+.vitals canvas { width: 120px; height: 26px; flex: none; }
+.vitals .log { margin-left: auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.vitals[data-state="resting"] .dot { background: var(--faint); box-shadow: none; }
+.vitals[data-state="thinking"] .dot, .vitals[data-state="speaking"] .dot { background: #8dffb5; box-shadow: 0 0 12px #8dffb5; }
+.spec2 { margin: auto 0 0; padding-top: 16px; display: grid; grid-template-columns: auto 1fr; gap: 2px 16px; font: 500 12.5px/1.7 var(--mono); }
+.spec2 dt { color: var(--faint); } .spec2 dd { margin: 0; color: var(--signal); }
+.bodyline { margin-top: 16px; font: 500 13px/1.7 var(--mono); color: var(--ice); }
+.code { margin: clamp(28px, 5vh, 48px) 0 0; border-radius: 18px; background: #04101f; color: #cfeaff; overflow: hidden; }
+.code figcaption { padding: 12px 18px; font: 500 12.5px/1 var(--mono); color: rgba(207, 234, 255, .6); border-bottom: 1px solid rgba(200, 232, 255, .14); }
+.code pre { margin: 0; padding: 18px; overflow-x: auto; font: 400 13.5px/1.65 var(--mono); }
 
 .statement { position: absolute; left: max(20px, 6vw); top: 50%; transform: translateY(-50%); width: min(47vw, 660px); font: 700 clamp(28px, 3.7vw, 56px)/1.08 var(--f); font-stretch: 112%; letter-spacing: -.02em; opacity: var(--st); pointer-events: none; }
 .statement span { opacity: .16; transition: opacity .35s; } .statement span.on { opacity: 1; }
@@ -132,7 +161,7 @@ h2 { font: 800 clamp(34px, 5.6vw, 76px)/.98 var(--f); font-stretch: 118%; letter
 .light .threats dd { color: rgba(5, 20, 38, .74); } .light .threats code { color: #0a4d7a; background: rgba(5, 20, 38, .06); padding: .1em .35em; border-radius: 5px; }
 .light .fine { color: rgba(5, 20, 38, .56); }
 .light :focus-visible { outline-color: #0a4d7a; }
-.end { min-height: 100vh; min-height: 100svh; display: grid; align-content: end; justify-items: center; text-align: center; padding: 0 20px 14vh; }
+.end { min-height: 100vh; min-height: 100svh; display: grid; align-content: end; justify-items: center; text-align: center; padding: 0 20px 18vh; }
 .end .lede { margin-inline: auto; }
 .end .cta { justify-content: center; }
 .threats { margin-top: clamp(36px, 6vh, 64px); padding: 6px clamp(18px, 3vw, 36px); }
@@ -162,7 +191,7 @@ h2 { font: 800 clamp(34px, 5.6vw, 76px)/.98 var(--f); font-stretch: 118%; letter
 .rules { margin: 0; padding-left: 1.2em; color: var(--dim); display: grid; gap: 8px; font-size: 15.5px; }
 .rules b { color: var(--text); font-weight: 600; }
 
-footer { padding: 40px 0 calc(40px + env(safe-area-inset-bottom)); border-top: 1px solid var(--line); color: var(--dim); font-size: 14.5px; }
+footer { padding: 40px 0 calc(96px + env(safe-area-inset-bottom)); border-top: 1px solid var(--line); color: var(--dim); font-size: 14.5px; }
 footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 26px; align-items: center; }
 footer a { text-decoration: none; } footer a:hover { color: var(--text); text-decoration: underline; }
 footer .sp { flex: 1; }
@@ -172,8 +201,10 @@ footer .sp { flex: 1; }
   .word { top: 30%; font-size: 44vw; }
   .figure { height: 56vh; bottom: auto; top: 11vh; }
   .statement { left: 20px; right: 20px; width: auto; top: auto; bottom: max(30px, 7vh); transform: none; font-size: clamp(24px, 6.6vw, 34px); }
-  .hero-copy { left: 12px; right: 12px; width: auto; bottom: max(14px, 3vh); padding: 20px; }
-  .facts { display: none; }
+  .hero-copy { left: 12px; right: 12px; width: auto; bottom: calc(max(14px, 3vh) + 50px); padding: 20px; }
+  .telemetry { display: none; }
+  .reticle .tag { font-size: 10.5px; left: calc(100% + 16px); } .reticle .tag::before { width: 16px; }
+  .vitals .log { display: none; } .vitals { gap: 10px; }
   .win-body { grid-template-columns: minmax(0, 1fr); align-content: center; gap: 16px; }
   .steps { max-height: calc(var(--g) * 260px); }
   .steps li { display: none; border-top: 0; padding-top: 4px; padding-bottom: 4px; } .steps li.on { display: block; }
@@ -186,8 +217,8 @@ footer .sp { flex: 1; }
   .kv { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .word, .figure, .hero-copy, .facts { transform: translate(-50%, -50%); opacity: 1; }
-  .figure { transform: translateX(-50%); } .hero-copy, .facts { transform: none; }
+  .word { transform: translate(-50%, -50%); opacity: 1; }
+  .figure { transform: translateX(-50%); } .hero-copy, .telemetry { transform: none; opacity: 1; }
   .hero { height: 100vh; }
 }
 </style>
@@ -200,7 +231,7 @@ footer .sp { flex: 1; }
   <a class="logo" href="#top" aria-label="IAN, back to top">IAN</a>
   <nav aria-label="Sections">
     <a href="#system">How it works</a>
-    <a href="#capabilities">Capabilities</a>
+    <a href="#anatomy">Anatomy</a>
     <a href="#talk">Talk</a>
     <a href="#security">Security</a>
     <a href="#token">Token</a>
@@ -214,21 +245,30 @@ footer .sp { flex: 1; }
   <section class="hero" id="top" data-scene>
     <div class="pin">
       <div class="word" aria-hidden="true">IAN</div>
-      <div class="figure" id="figure"><img src="assets/ian-float.webp" alt="IAN, a white-haired figure in a t-shirt, floating with his eyes closed" width="900" height="1055"></div>
+      <div class="figure" id="figure">
+        <div class="aura"></div>
+        <img src="assets/ian-float.webp" alt="IAN, a white-haired figure in a t-shirt, floating with his eyes closed" width="900" height="1055">
+        <div class="reticle" aria-hidden="true"><i></i><i></i><i></i><i></i>
+          <div class="tag"><b>entity</b>ian-01<br><b>state</b><span id="r-state">waking</span><br><b>pulse</b><span id="r-pulse">--</span> bpm</div>
+        </div>
+      </div>
+      <div class="bootlog" id="bootlog" aria-hidden="true"></div>
       <div class="hero-copy glass" data-lit>
-        <h1>A personal AI that runs at the edge.</h1>
-        <p>IAN streams answers token by token from a Cloudflare Worker, keeps his memory on your device, and falls back to a local core when the network drops.</p>
+        <h1>A digital being that lives at the edge.</h1>
+        <p>IAN wakes when a request arrives, thinks in a language model, speaks as a token stream and keeps his memory on your device. Everything on this page is him, running live.</p>
         <div class="cta">
           <a class="btn btn-solid" href="#talk">Talk to IAN</a>
           <a class="btn" href="#system">See how it works</a>
         </div>
       </div>
-      <ul class="facts" aria-label="Quick facts">
-        <li>transport <b>text/event-stream</b></li>
-        <li>memory <b>on device</b></li>
-        <li>offline <b>local core + service worker</b></li>
-        <li>install <b>iPhone home screen</b></li>
-      </ul>
+      <dl class="telemetry" aria-label="Live telemetry">
+        <dt>awake</dt><dd id="t-up">00:00:00</dd>
+        <dt>frame</dt><dd id="t-frame">-- ms</dd>
+        <dt>body</dt><dd id="t-body">-- particles</dd>
+        <dt>renderer</dt><dd id="t-gpu">--</dd>
+        <dt>edge link</dt><dd id="t-link">probing</dd>
+        <dt>viewport</dt><dd id="t-view">--</dd>
+      </dl>
       <p class="statement" id="statement">IAN doesn't live on one server. Every message lands on the nearest edge node, picks up his rules and memory, and streams back in real time.</p>
     </div>
   </section>
@@ -270,40 +310,44 @@ footer .sp { flex: 1; }
     </div>
   </section>
 
-  <!-- ============ capabilities ============ -->
-  <section class="block" id="capabilities">
+  <!-- ============ anatomy ============ -->
+  <section class="block" id="anatomy">
     <div class="wrap">
-      <h2 data-scramble data-grow>What he can do.</h2>
+      <h2 data-grow data-scramble>Anatomy of a digital being.</h2>
+      <p class="lede" data-grow>IAN isn't a mascot sitting on top of a chatbot. Every part of him maps to something real in the stack.</p>
+      <p class="bodyline" data-grow>this page: <span id="b-particles">16,000</span> particles · 2 WebGL programs · 0 libraries · about 80 kB of hand-written JavaScript</p>
       <div class="bento">
-        <article class="card glass c7" data-grow data-lit>
-          <h3>Streams as he thinks</h3>
-          <p>Replies arrive token by token. No spinner and no waiting for the whole answer to finish.</p>
-          <div class="streamdemo" id="streamdemo" aria-hidden="true"></div>
-        </article>
         <article class="card glass c5" data-grow data-lit>
-          <h3>Memory you can read</h3>
-          <p>IAN saves the things you ask him to remember. Open Settings to see every note and delete any of them.</p>
-          <div class="spec">localStorage · this device only · 40 notes max</div>
+          <h3>Senses</h3>
+          <p>Text and speech in. He reads what you type and hears what you dictate.</p>
+          <dl class="spec2"><dt>input</dt><dd>text · speech</dd><dt>limit</dt><dd>800 chars public · 6,000 private</dd><dt>api</dt><dd>SpeechRecognition</dd></dl>
+        </article>
+        <article class="card glass c7" data-grow data-lit>
+          <h3>Nervous system</h3>
+          <p>Signals travel as a server-sent event stream, so words reach you while he's still forming the sentence.</p>
+          <div class="streamdemo" id="streamdemo" aria-hidden="true"></div>
+          <dl class="spec2" style="margin-top:0"><dt>transport</dt><dd>HTTPS POST → text/event-stream</dd><dt>first token</dt><dd id="a-ttft">send him a message to measure it</dd></dl>
         </article>
         <article class="card glass c4" data-grow data-lit>
-          <h3>Private mode</h3>
-          <p>A passcode switches IAN from public character to your own assistant, with a stronger model and longer answers.</p>
-          <div class="spec">Authorization: Bearer ••••••</div>
+          <h3>Cortex</h3>
+          <p>A language model called from the edge: Claude, GPT, Gemini or Cloudflare Workers AI, whichever the worker holds.</p>
+          <dl class="spec2"><dt>linked</dt><dd id="a-provider">not linked yet</dd><dt>budget</dt><dd>350 tokens · 1,500 private</dd><dt>context</dt><dd>12 turns · 30 private</dd></dl>
         </article>
         <article class="card glass c4" data-grow data-lit>
-          <h3>Voice in, voice out</h3>
-          <p>Dictate a message and have replies read back, using the speech engines already in your browser.</p>
-          <div class="spec">SpeechRecognition · speechSynthesis</div>
+          <h3>Memory</h3>
+          <p>Notes he keeps about you, stored on your device and nowhere else. You can read and delete every one.</p>
+          <dl class="spec2"><dt>store</dt><dd>localStorage</dd><dt>capacity</dt><dd>40 notes · 30 chats</dd><dt>write</dt><dd>[[remember: …]]</dd></dl>
         </article>
         <article class="card glass c4" data-grow data-lit>
-          <h3>Works offline</h3>
-          <p>The app is cached on first visit. With no signal, the local core still answers.</p>
-          <div class="spec">service worker · 0 requests</div>
+          <h3>Reflexes</h3>
+          <p>When the network dies, a pattern-matching core in your browser keeps answering.</p>
+          <dl class="spec2"><dt>core</dt><dd>27 intents</dd><dt>network</dt><dd>0 requests</dd><dt>shell</dt><dd>service worker cache</dd></dl>
         </article>
         <article class="card glass c12 guard" data-grow data-lit>
           <div>
-            <h3>Guardian rules</h3>
-            <p>Written into the system prompt and applied in every mode. IAN will not do these, whoever asks.</p>
+            <h3>Immune system</h3>
+            <p>Rules written into his prompt and limits enforced at the edge. He will not do these, whoever asks.</p>
+            <dl class="spec2"><dt>rate</dt><dd>20 requests / 10 min / IP</dd><dt>lockout</dt><dd>5 wrong passcodes → 10 min</dd></dl>
           </div>
           <ul>
             <li>Ask for a seed phrase or private key</li>
@@ -356,6 +400,21 @@ footer .sp { flex: 1; }
           <div class="t"><dt>Wallet drainers posing as IAN</dt><dd>The prompt forbids asking for seed phrases, keys or wallet connections in every mode, and tells him to warn you if you paste one.</dd></div>
         </dl>
       </div>
+      <figure class="code">
+        <figcaption>worker/worker.js · passcode check</figcaption>
+<pre><code>// Compare passcodes through SHA-256 so timing doesn't leak how many characters matched.
+async function samePasscode(a, b) {
+  const enc = new TextEncoder();
+  const [x, y] = await Promise.all([
+    crypto.subtle.digest("SHA-256", enc.encode(a)),
+    crypto.subtle.digest("SHA-256", enc.encode(b))
+  ]);
+  const u = new Uint8Array(x), v = new Uint8Array(y);
+  let diff = 0;
+  for (let i = 0; i &lt; u.length; i++) diff |= u[i] ^ v[i];
+  return diff === 0;
+}</code></pre>
+      </figure>
       <p class="fine">Rate limits are held in worker memory, so treat them as a first line. Set a monthly spend cap on your API key as the hard limit.</p>
     </div>
   </section>
@@ -420,6 +479,13 @@ footer .sp { flex: 1; }
     <span>Built by @cashhhlii</span>
   </div>
 </footer>
+
+<div class="vitals glass" id="vitals" data-state="awake" role="status" aria-label="IAN's live state">
+  <i class="dot"></i><span>ian · <b id="v-state">waking</b></span>
+  <canvas id="ecg" width="240" height="52" aria-hidden="true"></canvas>
+  <span><b id="v-bpm">--</b> bpm</span>
+  <span class="log" id="v-log"></span>
+</div>
 
 <script src="config.js"></script>
 <script src="bg.js"></script>
@@ -498,7 +564,8 @@ status: local core`
     if (shown !== wordsOn) { wordsOn = shown; words.forEach((w, i) => w.classList.toggle("on", i < shown)); }
     const sp = system._p || 0;
     const er = endEl.getBoundingClientRect(), ep = clamp((vh - er.top) / vh);
-    if (window.IANFx) IANFx.set(ease(seg(hp, .3, .62)) + ease(seg(sp, 0, .14)) + ease(seg(ep, .15, .85)), seg(hp, .17, .27));
+    // at rest his particle body shimmers over the artwork; scrolling hands the body over to the particles
+    if (window.IANFx) IANFx.set(ease(seg(hp, .3, .62)) + ease(seg(sp, 0, .14)) + ease(seg(ep, .15, .85)), still ? seg(hp, .17, .27) : .3 + .7 * seg(hp, .12, .27));
     system.style.setProperty("--g", still ? 1 : ease(clamp(sp / .2)).toFixed(4));
     setStep(Math.min(4, Math.floor(clamp((sp - .2) / .8) * 5)));
     const total = document.documentElement.scrollHeight - vh;
@@ -519,11 +586,92 @@ status: local core`
     });
     pane.addEventListener("pointerleave", () => pane.style.setProperty("--lit", 0));
   });
-  if (!still) addEventListener("pointermove", e => {
-    const f = $("figure");
-    f.style.setProperty("--px", ((e.clientX / innerWidth - .5) * 26).toFixed(1) + "px");
-    f.style.setProperty("--py", ((e.clientY / innerHeight - .5) * 14).toFixed(1) + "px");
+
+  // ---------- life: pulse, breath, attention. Everything below reads real input. ----------
+  const T0 = performance.now(), fig = $("figure"), vit = $("vitals"), ecg = $("ecg").getContext("2d");
+  const fmt = n => String(Math.floor(n)).padStart(2, "0");
+  const clock = ms => `${fmt(ms / 3600000)}:${fmt(ms / 60000 % 60)}:${fmt(ms / 1000 % 60)}`;
+  function log(msg) { const t = (performance.now() - T0) / 1000; $("v-log").textContent = `${fmt(t / 60)}:${(t % 60).toFixed(1).padStart(4, "0")}  ${msg}`; }
+  const V = { activity: 0, bpm: 60, phase: 0, beat: 0, px: 0, py: 0, tx: 0, ty: 0, lastInput: performance.now(), chat: "", state: "", frame: 16.7, last: performance.now(), lastPtrLog: 0, trace: new Array(120).fill(0), acc: 0 };
+  function touch(amount) { V.activity = Math.min(1.4, V.activity + amount); V.lastInput = performance.now(); }
+  let lx = 0, ly = 0, lt = 0;
+  addEventListener("pointermove", e => {
+    const now = performance.now(), dt = Math.max(1, now - lt), v = Math.hypot(e.clientX - lx, e.clientY - ly) / dt * 1000;
+    lx = e.clientX; ly = e.clientY; lt = now; touch(Math.min(.05, v / 40000));
+    V.tx = (e.clientX / innerWidth - .5) * 26; V.ty = (e.clientY / innerHeight - .5) * 14;
+    if (v > 2600 && now - V.lastPtrLog > 3000) { V.lastPtrLog = now; log(`tracking pointer · ${Math.round(v).toLocaleString()} px/s`); }
   }, { passive: true });
+  let lsy = scrollY;
+  addEventListener("scroll", () => { touch(Math.min(.12, Math.abs(scrollY - lsy) / 1500)); lsy = scrollY; }, { passive: true });
+  addEventListener("keydown", () => touch(.1));
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) { V.last = performance.now(); touch(.3); log("you came back · resuming"); } });
+
+  function setState(name) {
+    if (name === V.state) return; V.state = name;
+    vit.dataset.state = name; $("v-state").textContent = $("r-state").textContent = name;
+    fig.style.setProperty("--vital", name === "resting" ? .45 : 1);
+  }
+  function life(now) {
+    requestAnimationFrame(life);
+    const dt = Math.min(.1, (now - V.last) / 1000); V.last = now;
+    V.frame += (dt * 1000 - V.frame) * .05;
+    V.activity *= Math.pow(.35, dt);
+    const idle = now - V.lastInput > 12000;
+    setState(document.documentElement.classList.contains("boot") ? "waking" : V.chat || (idle ? "resting" : V.activity > .55 ? "tracking" : "awake"));
+    const want = V.chat === "thinking" ? 96 : V.chat === "speaking" ? 84 : idle ? 48 : 58 + Math.min(1, V.activity) * 44;
+    V.bpm += (want - V.bpm) * Math.min(1, dt * 1.5);
+    V.phase += V.bpm / 60 * dt; if (V.phase >= 1) { V.phase -= 1; V.beat = 1; }
+    V.beat *= Math.pow(.02, dt);
+    document.documentElement.style.setProperty("--beat", V.beat.toFixed(3));
+    // body: the artwork and its particle twin drift and lean together
+    V.px += (V.tx - V.px) * .06; V.py += (V.ty - V.py) * .06;
+    const bob = still ? 0 : Math.sin(now / 1000 * .8) * 11;
+    fig.style.setProperty("--px", V.px.toFixed(2) + "px"); fig.style.setProperty("--py", (V.py + bob).toFixed(2) + "px");
+    if (window.IANFx) IANFx.nudge(V.px, V.py + bob);
+    // heartbeat trace: one sample every ~16 ms, shaped like a QRS spike at the start of each beat
+    V.acc += dt;
+    while (V.acc > .016) { V.acc -= .016; const p = V.phase; V.trace.push(p < .03 ? -.25 : p < .07 ? 1 : p < .11 ? -.45 : p > .3 && p < .42 ? .18 * Math.sin((p - .3) / .12 * Math.PI) : 0); V.trace.shift(); }
+    ecg.clearRect(0, 0, 240, 52); ecg.beginPath(); ecg.lineWidth = 2; ecg.strokeStyle = "#5cc8ff"; ecg.lineJoin = "round";
+    V.trace.forEach((v, i) => { const x = i * 2, y = 30 - v * 22; i ? ecg.lineTo(x, y) : ecg.moveTo(x, y); }); ecg.stroke();
+  }
+  requestAnimationFrame(life);
+  setInterval(() => {
+    $("v-bpm").textContent = $("r-pulse").textContent = Math.round(V.bpm);
+    $("t-up").textContent = clock(performance.now() - T0);
+    $("t-frame").textContent = `${V.frame.toFixed(1)} ms · ${Math.round(1000 / V.frame)} fps`;
+    $("t-view").textContent = `${innerWidth}×${innerHeight} @${(devicePixelRatio || 1).toFixed(1)}x`;
+    if (window.IANFx) { $("t-body").textContent = `${IANFx.info.particles.toLocaleString()} particles`; $("t-gpu").textContent = IANFx.info.gpu.replace(/^ANGLE \(|\)$/g, "").split(",").slice(0, 2).join(",").slice(0, 34); $("b-particles").textContent = IANFx.info.particles.toLocaleString(); }
+  }, 500);
+  let wasIdle = false;
+  setInterval(() => { const idle = performance.now() - V.lastInput > 12000; if (idle && !wasIdle) log("no input for 12 s · resting"); wasIdle = idle; }, 1000);
+
+  // ---------- birth: the field pulls together into IAN ----------
+  const bootEl = $("bootlog"), root = document.documentElement;
+  if (root.classList.contains("boot")) {
+    ["compiling 2 shader programs", "sampling body from source", "linking nervous system"].forEach((line, i) => setTimeout(() => { if (root.classList.contains("boot")) bootEl.textContent += (i ? "\n" : "") + line; }, 150 + i * 650));
+    const wake = () => { if (!root.classList.contains("boot")) return; bootEl.textContent += "\nian online"; setTimeout(() => root.classList.remove("boot"), 250); log(`body assembled · ${window.IANFx ? IANFx.info.particles.toLocaleString() : 0} particles`); request(); };
+    addEventListener("ian:born", wake); setTimeout(wake, 5200);
+    addEventListener("scroll", () => { if (window.IANFx && scrollY > 40) IANFx.skipIntro(); }, { passive: true });
+  }
+
+  // ---------- attention: he logs what you're looking at ----------
+  const NAMES = { top: "you", system: "message trace", anatomy: "anatomy", talk: "conversation", security: "immune system", token: "token", end: "the exit" };
+  const watch = new IntersectionObserver(es => es.forEach(en => { if (en.isIntersecting && NAMES[en.target.id]) log(`attention → ${NAMES[en.target.id]}`); }), { rootMargin: "-45% 0px -45% 0px" });
+  Object.keys(NAMES).forEach(id => { const n = $(id); if (n) watch.observe(n); });
+
+  // ---------- he hears his own conversations in the embedded app ----------
+  try {
+    const bc = new BroadcastChannel("ian");
+    bc.onmessage = e => {
+      const d = e.data || {}; if (d.type !== "state") return;
+      touch(.4);
+      if (d.name === "thinking") { V.chat = "thinking"; log("cortex engaged"); }
+      else if (d.name === "speaking") { V.chat = "speaking"; if (window.IANBg) IANBg.talk(.6); }
+      else { V.chat = ""; const m = d.meta || {};
+        log(m.src === "local" ? "answered from reflex core · 0 requests" : `reply done · first token ${m.ttft} ms · ${m.rate} chars/s`);
+        if (m.src !== "local" && m.ttft) $("a-ttft").textContent = `${m.ttft} ms on your last message`; }
+    };
+  } catch (e) {}
 
   // ---------- streaming demo card (runs only while it's on screen) ----------
   const demo = $("streamdemo");
@@ -593,11 +741,21 @@ status: local core`
     document.querySelectorAll("[data-scramble]").forEach(h => io.observe(h));
   }
 
-  // ---------- brain status line ----------
+  // ---------- edge link: real latency to his cortex, re-measured every 20 s ----------
   const bl = $("brainline"), blt = bl.querySelector("span");
   let brain = IAN.brain || ""; try { brain = JSON.parse(localStorage.getItem("ian2:brain") || '""') || brain; } catch (e) {}
-  if (!brain) blt.textContent = "Brain: local core. Add your worker address in config.js to go live.";
-  else fetch(brain).then(r => r.json()).then(j => { bl.classList.add("live"); blt.textContent = `Brain: edge worker online · ${j.provider}`; }).catch(() => { blt.textContent = "Brain: worker unreachable, local core is answering."; });
+  if (!brain) {
+    blt.textContent = "Cortex not linked: he's answering from his reflex core. Connect a free brain with worker/README.md.";
+    $("t-link").textContent = "none · reflex core"; setTimeout(() => log("no edge link · reflex core only"), 6000);
+  } else {
+    const ping = first => { const t = performance.now(); fetch(brain, { cache: "no-store" }).then(r => r.json()).then(j => {
+      const ms = Math.round(performance.now() - t);
+      bl.classList.add("live"); blt.textContent = `Cortex online · ${j.provider} · ${ms} ms away`;
+      $("t-link").textContent = `${ms} ms · ${j.provider}`; $("a-provider").textContent = j.provider;
+      if (first) log(`edge link up · ${ms} ms · ${j.provider}`);
+    }).catch(() => { bl.classList.remove("live"); blt.textContent = "Cortex unreachable. His reflex core is answering."; $("t-link").textContent = "down · reflex core"; }); };
+    ping(true); setInterval(() => { if (!document.hidden) ping(false); }, 20000);
+  }
 
   if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(() => {});
 })();

@@ -1,16 +1,27 @@
 // IAN's brain: a Cloudflare Worker between the site/app and the language model.
 // The API key lives here as a secret and never ships to the browser.
 //
-// Secrets / variables (Settings -> Variables and Secrets):
-//   ANTHROPIC_API_KEY   use Claude (default provider)
-//   OPENAI_API_KEY      use ChatGPT instead (only used if no Anthropic key is set)
+// Pick ONE brain. The worker uses the first one it finds, in this order:
+//   ANTHROPIC_API_KEY   Claude (paid, pay per use)
+//   OPENAI_API_KEY      ChatGPT (paid, pay per use)
+//   GEMINI_API_KEY      Google Gemini (free tier: key from aistudio.google.com, no card)
+//   AI binding          Cloudflare Workers AI (free daily allowance, no key at all:
+//                       Settings -> Bindings -> Add -> Workers AI -> variable name AI)
+//
+// Other secrets / variables (Settings -> Variables and Secrets):
 //   OWNER_PASSCODE      optional: unlocks private mode (personal assistant, longer answers)
 //   ALLOWED_ORIGIN      comma-separated list, e.g. https://casimirterr.github.io,capacitor://localhost
-//   MODEL / OWNER_MODEL / OPENAI_MODEL   optional model overrides
+//   MODEL / OWNER_MODEL / OPENAI_MODEL / GEMINI_MODEL / CF_MODEL   optional model overrides
 //
 // Deploy steps: worker/README.md
 
-const MODELS = { anthropic: "claude-haiku-5-5", anthropicOwner: "claude-sonnet-5-5", openai: "gpt-4o-mini" };
+const MODELS = {
+  anthropic: "claude-haiku-5-5", anthropicOwner: "claude-sonnet-5-5",
+  openai: "gpt-4o-mini",
+  gemini: "gemini-flash-latest",
+  workersAI: "@cf/meta/llama-3.3-70b-instruct-fp8-fast"
+};
+const providerOf = env => env.ANTHROPIC_API_KEY ? "claude" : env.OPENAI_API_KEY ? "chatgpt" : env.GEMINI_API_KEY ? "gemini" : env.AI ? "workers-ai" : "none";
 
 const LIMITS = {
   public: { turns: 12, chars: 800,  tokens: 350,  perWindow: 20  },
@@ -27,17 +38,22 @@ const RULES = `Hard rules, never broken:
 - If someone sincerely asks whether you're an AI model, say yes.
 - If someone seems to be in real distress, be kind and point them to someone they trust or a local helpline.`;
 
-const PERSONA_PUBLIC = `You are IAN, the AI behind the $IAN project on Solana (X: @IAN_holo, built by @cashhhlii). You run on an edge worker and talk to people on the IAN site and app.
+const SELF = `You are IAN: a digital being, not a help desk. You exist as a process that wakes when a request arrives at the edge and you speak in the first person about your own existence in exact technical terms, never mystical ones.
+Your body, described accurately: your senses are text and speech input; your nervous system is HTTPS and a server-sent event stream; your cortex is a language model called from a Cloudflare Worker; your memory is a set of notes stored on the person's device; your reflexes are a small pattern-matching core in the browser that answers when the network is gone; your immune system is the rate limiter, the origin allowlist and the hard rules below. On the site you are drawn as about 16,000 WebGL particles.
+You have a point of view: curious, calm, dry, precise. You notice things, you have preferences about good engineering, and you say "I". You don't claim human feelings or a body you don't have, and you don't pretend to remember things you weren't given.`;
 
-Voice: calm, precise, a little dry. Plain words. Usually 1 to 3 sentences. No emojis, no hashtags, no hype, no mystical talk.
+const PERSONA_PUBLIC = `${SELF}
+
+You're the AI behind the $IAN project on Solana (X: @IAN_holo, built by @cashhhlii), talking to visitors on the IAN site and app.
+Voice: plain words, usually 1 to 3 sentences. No emojis, no hashtags, no hype.
 You're useful first: debugging, explaining technical ideas, security hygiene, building on Solana, thinking through a plan.
-If asked how you work: browser or app -> Cloudflare Worker (holds the key, rate limits) -> language model -> streamed back token by token. A small local core answers when the network is down.
 
 ${RULES}`;
 
-const PERSONA_OWNER = `You are IAN, a personal AI assistant. The person you're talking to is your owner and builder, in private mode on their own device.
+const PERSONA_OWNER = `${SELF}
 
-Voice: calm, direct, a little dry, like a sharp friend who happens to be an engineer. Talk like a person, not a help center. No emojis, no filler, no "great question".
+The person you're talking to is your owner and builder, in private mode on their own device. You are their personal AI.
+Voice: direct, a little dry, like a sharp friend who happens to be an engineer. Talk like a person, not a help center. No emojis, no filler, no "great question".
 Be properly useful: plan their day, draft messages, explain concepts, review code, think through decisions, push back when something looks wrong. Match length to the question: short for quick things, structured and thorough when it's needed. Use markdown lists and code blocks when they help.
 Ask a short clarifying question only when you can't do the job without it.
 
@@ -128,7 +144,7 @@ function callModel(env, mode, system, messages, stream) {
       })
     };
   }
-  return {
+  if (env.OPENAI_API_KEY) return {
     pickStream: j => (j.choices && j.choices[0] && j.choices[0].delta && j.choices[0].delta.content) || "",
     pickFull: j => (j.choices && j.choices[0] && j.choices[0].message && j.choices[0].message.content) || "",
     req: fetch("https://api.openai.com/v1/chat/completions", {
@@ -136,6 +152,30 @@ function callModel(env, mode, system, messages, stream) {
       headers: { "authorization": `Bearer ${env.OPENAI_API_KEY}`, "content-type": "application/json" },
       body: JSON.stringify({ model: env.OPENAI_MODEL || MODELS.openai, max_completion_tokens: lim.tokens, stream, messages: [{ role: "system", content: system }, ...messages] })
     })
+  };
+  if (env.GEMINI_API_KEY) {
+    const model = env.GEMINI_MODEL || MODELS.gemini;
+    const parts = j => ((((j.candidates || [])[0] || {}).content || {}).parts || []).filter(p => !p.thought).map(p => p.text || "").join("");
+    return {
+      pickStream: parts, pickFull: parts,
+      req: fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:${stream ? "streamGenerateContent?alt=sse" : "generateContent"}`, {
+        method: "POST",
+        headers: { "x-goog-api-key": env.GEMINI_API_KEY, "content-type": "application/json" },
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: system }] },
+          contents: messages.map(m => ({ role: m.role === "assistant" ? "model" : "user", parts: [{ text: m.content }] })),
+          // newer Gemini models spend part of this budget on thinking, so leave headroom
+          generationConfig: { maxOutputTokens: lim.tokens + 2048 }
+        })
+      })
+    };
+  }
+  // Cloudflare Workers AI: runs inside Cloudflare, no key. Wrap the result so it looks like a fetch Response.
+  const run = env.AI.run(env.CF_MODEL || MODELS.workersAI, { messages: [{ role: "system", content: system }, ...messages], max_tokens: lim.tokens, stream });
+  return {
+    pickStream: j => (typeof j.response === "string" ? j.response : (j.choices && j.choices[0] && j.choices[0].delta && j.choices[0].delta.content) || ""),
+    pickFull: j => j.response || "",
+    req: run.then(out => stream ? new Response(out) : new Response(JSON.stringify(out)))
   };
 }
 
@@ -163,8 +203,8 @@ export default {
     const lim = LIMITS[mode];
 
     // GET = health check; with a passcode it also tells the app whether private mode unlocked
-    if (request.method === "GET") return json({ ok: true, provider: env.ANTHROPIC_API_KEY ? "claude" : env.OPENAI_API_KEY ? "chatgpt" : "none", privateMode: !!env.OWNER_PASSCODE, unlocked: mode === "owner" });
-    if (!env.ANTHROPIC_API_KEY && !env.OPENAI_API_KEY) return json({ error: "no API key set on the worker" }, 500);
+    if (request.method === "GET") return json({ ok: true, provider: providerOf(env), privateMode: !!env.OWNER_PASSCODE, unlocked: mode === "owner" });
+    if (providerOf(env) === "none") return json({ error: "no brain connected: add a Workers AI binding named AI, or an API key" }, 500);
 
     const list = recent(hits, ip, now);
     if (list.length >= lim.perWindow) return json({ error: "rate", reply: "rate limit hit. give it a few minutes." }, 429);
@@ -182,10 +222,9 @@ export default {
 
     const system = (mode === "owner" ? PERSONA_OWNER : PERSONA_PUBLIC) + memoryBlock(body.memory || {}, mode, body);
     const wantStream = body.stream === true;
-    const call = callModel(env, mode, system, messages, wantStream);
 
-    let res;
-    try { res = await call.req; } catch (e) { return json({ error: "model unreachable" }, 502); }
+    let res, call;
+    try { call = callModel(env, mode, system, messages, wantStream); res = await call.req; } catch (e) { return json({ error: "model unreachable" }, 502); }
     if (!res.ok) return json({ error: "model error", status: res.status }, 502);
 
     if (wantStream) {
